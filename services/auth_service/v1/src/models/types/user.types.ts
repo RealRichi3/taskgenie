@@ -4,6 +4,7 @@ import { IPasswordDoc } from './password.types';
 import { IStatusDoc } from './status.types';
 import { Email, WithPopulated } from '../../types';
 
+/* User Types */
 interface IUserRole {
     Admin: 'Admin';
     SuperAdmin: 'SuperAdmin';
@@ -13,13 +14,45 @@ interface IUser {
     firstname: string;
     lastname: string;
     email: Email;
-    role: TUserRole;
+    role: IUserRole[keyof IUserRole];
     googleId?: string;
     githubId?: string;
     createdAt: Date;
     updatedAt: Date;
 }
+interface IUserDoc extends IUser, IUserMethods, Document { }
+interface IUserModel extends Model<IUserDoc>, IUserMethods { }
+interface IUserMethods {
+    createProfile:
+    <U extends IUsersDocs[keyof IUsersDocs]>(
+        this: IUserDoc,
+        profile_data: TProfileData<U['role']>,
+        session: ClientSession
+    ) => Promise<TProfile<U['role']>>;
+    getProfile: <U extends TUserRole>() => Promise<TProfile<U>>;
+}
+interface IUserWithVirtualsDoc<R extends TUserRole = TUserRole> extends IUserDoc {
+    status: Types.ObjectId | IStatusDoc;
+    password: Types.ObjectId | IPasswordDoc;
+    user_profile: TProfile<R>
+}
+type UsersWithStrictRole<R extends TUserRole> = Omit<IUserDoc, 'role'> & { role: R }
 
+
+/* User Profiles */
+interface ISuperAdmin extends IUser {
+    role: IUserRole['SuperAdmin'];
+    user: Types.ObjectId | IUser;
+}
+interface ISuperAdminDoc extends ISuperAdmin, Document { }
+
+interface IAdmin extends IUser {
+    role: IUserRole['Admin'];
+    user: Types.ObjectId | IUser;
+}
+interface IAdminDoc extends IAdmin, Document { }
+
+/* User Profiles Grouped by Role */
 type Users = {
     Admin: {
         plain: IAdmin;
@@ -30,22 +63,11 @@ type Users = {
         doc: ISuperAdminDoc;
     }
 }
-
 type IUsers = {
-    [key in IUser['role']]: Users[key]['plain'];
+    [key in keyof Users]: Users[key]['plain'];
 }
 type IUsersDocs = {
-    [key in IUser['role']]: Users[key]['doc'];
-}
-
-interface IUserMethods {
-    createProfile:
-    <U extends IUsersDocs[keyof IUsersDocs]>(
-        this: IUserDoc,
-        profile_data: TProfileData<U['role']>,
-        session: ClientSession
-    ) => Promise<TProfile<U['role']>>;
-    getProfile: <U extends TUserRole>() => Promise<TProfile<U>>;
+    [key in keyof Users]: Users[key]['doc'];
 }
 
 type TProfile<T extends IUser['role']> = IUsersDocs[T];
@@ -57,27 +79,6 @@ type TUserWithProfileAndStatus =
         'status',
         IStatusDoc
     >;
-
-interface IUserDoc extends IUser, IUserMethods, Document { }
-interface IUserModel extends Model<IUserDoc>, IUserMethods { }
-
-interface IUserWithVirtualsDoc<R extends TUserRole = TUserRole> extends IUserDoc {
-    status: Types.ObjectId | IStatusDoc;
-    password: Types.ObjectId | IPasswordDoc;
-    user_profile: TProfile<R>
-}
-
-interface ISuperAdmin extends IUser {
-    role: 'SuperAdmin';
-    user: Types.ObjectId | IUser;
-}
-interface ISuperAdminDoc extends ISuperAdmin, Document { }
-
-interface IAdmin extends IUser {
-    role: 'Admin';
-    user: Types.ObjectId | IUser;
-}
-interface IAdminDoc extends IAdmin, Document { }
 
 export {
     IUserWithVirtualsDoc,
@@ -96,4 +97,7 @@ export {
     TUserWithProfileAndStatus,
     IUsers,
     IUsersDocs,
+    Users,
+    UsersWithStrictRole,
+    IUserRole
 };
