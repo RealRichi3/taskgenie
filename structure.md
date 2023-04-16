@@ -33,6 +33,13 @@ Customizable Branding: Gigwalk allows clients to customize their branding, inclu
     -   POST /login: Authenticates a user with a username and password. Returns an access token.
     -   GET /users/{id}: Retrieves details of a specific user by ID, including username, email, task history, and preferences.
     -   PUT /users/{id}: Updates a user by ID, allowing users to edit their personal information, view task history, and manage preferences.
+    -   GET /users/{id}/isloggedin: Checks if a user is logged in, returning a boolean value.
+    -   POST /auth/login
+    -   POST /auth/logout
+    -   GET /auth/token
+    -   POST /auth/forgotpassword
+    -   PATCH /auth/resetpassword
+
 4.  Communication Between Users
     
     -   POST /messages: Creates a new message between a client and worker, including sender ID, recipient ID, and message text. Returns the newly created message object.
