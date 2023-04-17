@@ -56,6 +56,7 @@ router
         permit(['SuperAdmin']),
         withAuthentication(deactivateUserAccount))
     .post('/isloggedin', basicAuth())
+    .get('/user', basicAuth())
 
 // router.use(permit(['SuperAdmin']))
 router
