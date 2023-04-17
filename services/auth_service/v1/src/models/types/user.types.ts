@@ -8,13 +8,14 @@ import { Email, WithPopulated } from '../../types';
 interface IUserRole {
     Admin: 'Admin';
     SuperAdmin: 'SuperAdmin';
+    EndUser: 'EndUser';
 }
 type TUserRole = IUserRole[keyof IUserRole];
 interface IUser {
     firstname: string;
     lastname: string;
     email: Email;
-    role: IUserRole[keyof IUserRole];
+    role: TUserRole;
     googleId?: string;
     githubId?: string;
     createdAt: Date;
@@ -24,20 +25,20 @@ interface IUserDoc extends IUser, IUserMethods, Document { }
 interface IUserModel extends Model<IUserDoc>, IUserMethods { }
 interface IUserMethods {
     createProfile:
-    <U extends IUsersDocs[keyof IUsersDocs]>(
+    <R extends IUser['role']>(
         this: IUserDoc,
-        profile_data: TProfileData<U['role']>,
         session: ClientSession
-    ) => Promise<TProfile<U['role']>>;
+    ) => Promise<TProfile<R>>;
     getProfile: <U extends TUserRole>() => Promise<TProfile<U>>;
 }
-interface IUserWithVirtualsDoc<R extends TUserRole = TUserRole> extends IUserDoc {
+interface IUserWithVirtualsDoc<R extends TUserRole> extends IUserDoc {
     status: Types.ObjectId | IStatusDoc;
     password: Types.ObjectId | IPasswordDoc;
     user_profile: TProfile<R>
 }
-type UsersWithStrictRole<R extends TUserRole> = Omit<IUserDoc, 'role'> & { role: R }
-
+type UsersWithStrictRole = {
+    [key in IUser['role']] : Omit<IUser, 'role'> & { role: key }
+}
 
 /* User Profiles */
 interface ISuperAdmin extends IUser {
@@ -52,6 +53,12 @@ interface IAdmin extends IUser {
 }
 interface IAdminDoc extends IAdmin, Document { }
 
+interface IEndUser extends IUser {
+    role: IUserRole['EndUser'];
+    user: Types.ObjectId | IUser;
+}
+interface IEndUserDoc extends IEndUser, Document { }
+
 /* User Profiles Grouped by Role */
 type Users = {
     Admin: {
@@ -61,17 +68,21 @@ type Users = {
     SuperAdmin: {
         plain: ISuperAdmin;
         doc: ISuperAdminDoc;
+    },
+    EndUser: {
+        plain: IEndUser;
+        doc: IEndUserDoc;
     }
 }
-type IUsers = {
+type IUserPlain = {
     [key in keyof Users]: Users[key]['plain'];
 }
-type IUsersDocs = {
+type IUserDocs = {
     [key in keyof Users]: Users[key]['doc'];
 }
 
-type TProfile<T extends IUser['role']> = IUsersDocs[T];
-type TProfileData<T extends IUser['role']> = Omit<IUsers[T], 'user'>;
+type TProfile<T extends IUser['role']> = IUserDocs[T];
+type TProfileData<T extends IUser['role']> = Omit<IUserPlain[T], 'user'>;
 type TUserWithProfile = WithPopulated<IUserDoc, 'profile', TProfile<IUser['role']>>;
 type TUserWithProfileAndStatus =
     WithPopulated<
@@ -81,23 +92,15 @@ type TUserWithProfileAndStatus =
     >;
 
 export {
-    IUserWithVirtualsDoc,
-    IUser,
-    IUserModel,
-    ISuperAdmin,
-    IAdmin,
-    IUserDoc,
-    ISuperAdminDoc,
-    IAdminDoc,
-    IUserMethods,
-    TProfile,
-    TProfileData,
-    TUserRole,
-    TUserWithProfile,
-    TUserWithProfileAndStatus,
-    IUsers,
-    IUsersDocs,
-    Users,
-    UsersWithStrictRole,
-    IUserRole
+    IUser, IUserDoc, 
+    IUserPlain, IUserDocs, 
+    IUserModel, IUserMethods,
+    IAdmin, IAdminDoc, 
+    ISuperAdmin, ISuperAdminDoc,
+    IEndUser, IEndUserDoc,
+    IUserWithVirtualsDoc, 
+    Users, UsersWithStrictRole,
+    TProfile, TProfileData, 
+    TUserWithProfile, TUserWithProfileAndStatus,
+    IUserRole, TUserRole
 };

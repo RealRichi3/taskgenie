@@ -2,7 +2,7 @@ import {
     IAdminDoc,
     TProfile,
     ISuperAdminDoc,
-    IUserDoc, TProfileData, IUsersDocs, Users, IUser, TUserRole
+    IUserDoc,
 } from './types/user.types';
 import { model, ClientSession } from 'mongoose'
 
@@ -32,26 +32,26 @@ async function createAdminProfile(
     return doc;
 }
 
-async function createProfile<R extends TUserRole>(
-    this: Omit<IUserDoc, 'role'> & { role: R },
+async function createProfile(
+    this: IUserDoc,
     session?: ClientSession
-): Promise<TProfile<R>> {
-    switch (this.role as TUserRole) {
+) {
+    switch (this.role) {
         case 'Admin':
-            return createAdminProfile(this, session) as unknown as TProfile<R>
+            return createAdminProfile(this, session)
         case 'SuperAdmin':
-            return createSuperAdminProfile(this, session) as unknown as TProfile<R>
+            return createSuperAdminProfile(this, session)
     }
 }
 
-async function getProfile(this : IUserDoc): Promise<TProfile<typeof this.role>> {
+async function getProfile(this: IUserDoc): Promise<TProfile<typeof this.role>> {
     type Profile = TProfile<typeof this.role>;
     const res = await model<Profile>(this.role).findOne({ user: this._id })
 
     return res?.toObject() as unknown as Promise<Profile>;
 }
 
-export  {
+export {
     createProfile,
     getProfile
 }

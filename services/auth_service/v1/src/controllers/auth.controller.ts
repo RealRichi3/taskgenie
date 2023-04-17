@@ -12,7 +12,7 @@ import { User, IUserDoc } from '../models/user.model';
 import { AuthCode, BlacklistedToken } from '../models/auth.model';
 import { IPasswordDoc, Password } from '../models/password.model';
 import { BadRequestError, ForbiddenError, InternalServerError } from '../utils/errors';
-import { IUser, IUsers, IUsersDocs, TProfile, TProfileData } from '../models/types/user.types';
+import { IUser, IUserDocs, TProfile, TProfileData } from '../models/types/user.types';
 
 /**
  * User signup
@@ -65,15 +65,8 @@ const userSignup = async (req: Request, res: Response, next: NextFunction) => {
         user = (await User.create([user_info], { session }))[0]
         
         if (user) {
-            type R = typeof user.role;
-            const profile_data = { ...user.toObject({ virtuals: true }), ...user_info } as TProfileData<R>
-            
-            type TUserWithStrictRole = IUsersDocs[R];
-            type U = WithPopulated<TUserWithStrictRole, 'profile', TProfile<R>>;
-            const user_profile = user as U ;
-
             // Create users profile
-            const profile = await user_profile.createProfile<U>(profile_data , session);
+            const profile = await user.createProfile<typeof user.role>(session);
 
             console.log(profile)
 

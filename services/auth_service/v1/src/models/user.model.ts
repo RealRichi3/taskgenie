@@ -1,7 +1,9 @@
 import { Schema, Model, model } from 'mongoose';
 import { Status } from './status.model';
 import {
-    IAdmin, IAdminDoc, ISuperAdmin, ISuperAdminDoc,
+    IAdmin, IAdminDoc, 
+    IEndUser, IEndUserDoc, 
+    ISuperAdmin, ISuperAdminDoc, 
     IUser, IUserDoc, IUserMethods, IUserModel
 } from './types/user.types';
 import { createProfile, getProfile } from './profile';
@@ -22,8 +24,7 @@ const user_schema = new Schema<IUserDoc, IUserModel, IUserMethods>(
         role: {
             type: String,
             required: true,
-            enum: ['Admin', 'SuperAdmin'],
-            default: 'Patient',
+            enum: ['Admin', 'SuperAdmin', 'EndUser'],
         },
         googleId: { type: String, select: false },
     },
@@ -44,7 +45,7 @@ const user_schema = new Schema<IUserDoc, IUserModel, IUserMethods>(
 const admin_schema = new Schema<IAdminDoc>(
     {
         user: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
-        role: { type: String, required: true, enum: ['Admin', 'SuperAdmin'], default: 'Admin' },
+        role: { type: String, required: true, default: 'Admin' },
     },
     options
 );
@@ -52,10 +53,15 @@ const admin_schema = new Schema<IAdminDoc>(
 const super_admin_schema = new Schema<ISuperAdminDoc>(
     {
         user: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
-        role: { type: String, required: true, enum: ['SuperAdmin'], default: 'SuperAdmin' },
+        role: { type: String, required: true, default: 'SuperAdmin' },
     },
     options
 );
+
+const enduser_schema = new Schema<IEndUserDoc>({
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
+    role: { type: String, default: 'EndUser' },
+});
 
 // Get users password from Password collection
 user_schema.virtual('password', {
@@ -89,7 +95,7 @@ user_schema.pre('validate', async function (next) {
             ? // Activate and verify user if in development mode
             ([status.isActive, status.isVerified] = [true, true])
             : // Only activate user if role is EndUser (user is still required to verify account)
-            (status.isActive = this.role == 'Patient' ? true : false);
+            (status.isActive = this.role == 'EndUser' ? true : false);
 
         await status.save();
         await AuthCode.create({ user: this._id });
@@ -98,10 +104,6 @@ user_schema.pre('validate', async function (next) {
     next();
 });
 
-// user_schema.virtual('profile').get(async function (): Promise<TProfile<typeof this.role>> {
-//     return this.getProfile();
-// });
-
 user_schema.method('createProfile', createProfile);
 user_schema.method('getProfile', getProfile);
 
@@ -109,9 +111,11 @@ const
     User: Model<IUserDoc & IUserModel> = model<IUserDoc & IUserModel>('User', user_schema),
     Admin: Model<IAdminDoc> = model<IAdminDoc>('Admin', admin_schema),
     SuperAdmin: Model<ISuperAdminDoc> = model<ISuperAdminDoc>('SuperAdmin', super_admin_schema),
+    EndUser: Model<IEndUserDoc> = model<IEndUserDoc>('EndUser', enduser_schema);
 
 export {
     User, IUser, IUserDoc,
     Admin, IAdmin, IAdminDoc,
     SuperAdmin, ISuperAdmin, ISuperAdminDoc,
+    EndUser, IEndUser, IEndUserDoc,
 };
