@@ -1,14 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import { ForbiddenError, UnauthenticatedError } from '../utils/errors';
 import { getAuthTokens, getJWTConfigVariables } from '../services/auth.service';
-import { TAuthCode, TAuthToken, IRequestWithUser, UserWithStatus } from '../types';
+import { TAuthToken, IRequestWithUser, UserWithStatus } from '../types';
 import * as config from '../config';
 import * as jwt from 'jsonwebtoken';
 import { BlacklistedToken } from '../models/auth.model';
 import { AuthenticatedAsyncController, AuthenticatedRequest } from '../types/global';
-import { IStatus } from '../models/types/status.types';
-import logger from './winston';
-import { TProfile, TUserRole, TUserWithProfile, TUserWithProfileAndStatus } from '../models/types/user.types';
+import { TUserWithProfileAndStatus } from '../models/types/user.types';
 
 /**
  * Exchange Auth Tokens
