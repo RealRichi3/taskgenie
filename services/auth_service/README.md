@@ -94,6 +94,9 @@ And make sure that the port you are exposing is the same as the port you set in 
 
 Navigate to `http://localhost:<your_port>/api/v1/`.
 
+### API Documentation
+The API documentation can be found [here](https://documenter.getpostman.com/view/20633788/2s93XzwN5M).
+
 
 ### Built by
 - Name: Riche Moluno
