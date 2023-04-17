@@ -1,11 +1,10 @@
 
-# taskgenie
-This is a simple API for managing authentication and authorization for your web application. It was built using Node.js with Typescript, Express, and MongoDB.
-
-## Getting Started
+# Auth Service
+This is a simple API for managing authentication and authorization for your web application. It was built using Node.js with Typescript, Express, and MongoDB. It can be used as a standalone service or as a microservice in a microservice architecture.
 
 ### Prerequisites
 - Node.js
+- Typescript
 - MongoDB
 - Docker (optional)
 
