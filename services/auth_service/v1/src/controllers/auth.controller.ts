@@ -12,7 +12,7 @@ import { User, IUserDoc } from '../models/user.model';
 import { AuthCode, BlacklistedToken } from '../models/auth.model';
 import { IPasswordDoc, Password } from '../models/password.model';
 import { BadRequestError, ForbiddenError, InternalServerError } from '../utils/errors';
-import { IUser, IUserDocs, TProfile, TProfileData } from '../models/types/user.types';
+import { IUser } from '../models/types/user.types';
 
 /**
  * User signup

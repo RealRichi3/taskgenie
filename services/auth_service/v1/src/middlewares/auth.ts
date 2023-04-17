@@ -81,7 +81,18 @@ const basicAuth = function (token_type: TAuthToken | undefined = undefined) {
             // return next(new ForbiddenError('Unauthorized access, users account is not active'))
         }
 
-        return next()
+        if (req.path == '/isloggedin' ||
+            req.path == '/user') {
+            return res.status(200).send({
+                status: 'success',
+                message: 'User is logged in',
+                data: {
+                    user
+                }
+            })
+        }
+
+        next()
     };
 }
 
