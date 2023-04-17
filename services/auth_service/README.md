@@ -1,153 +1,31 @@
 
 # taskgenie
+This is a simple API for managing authentication and authorization for your web application. It was built using Node.js with Typescript, Express, and MongoDB.
 
-Task genie allows clients to create and publish tasks that need to be completed by workers. Workers can browse available tasks and accept the ones they're interested in completing. Clients can monitor the status of their tasks and provide feedback to workers once they're completed.
+## Getting Started
 
-  
+### Prerequisites
+- Node.js
+- MongoDB
+- Docker (optional)
 
-```diff
-backend/
+Download the project and install the dependencies.
 
---- services/
+```bash
+git clone https://github.com/RealRichi3/taskgenie
 
------- task_service/
+cd taskgenie
 
---------- api/
+cd services/auth_service
 
------------- v1/
-
---------------- views.py
-
---------------- serializers.py
-
---------- tasks/
-
------------- tasks.py
-
---------- models.py
-
---------- urls.py
-
---------- tests/
-
------------- test_views.py
-
------------- test_serializers.py
-
------- payment_service/
-
---------- api/
-
------------- v1/
-
---------------- views.py
-
---------------- serializers.py
-
---------- payments/
-
------------- payments.py
-
---------- models.py
-
---------- urls.py
-
---------- tests/
-
------------- test_views.py
-
------------- test_serializers.py
-
---- config/
-
------- settings.py
-
------- urls.py
-
---- requirements.txt
-
---- manage.py
-
-  
-
-frontend/
-
---- src/
-
------- components/
-
---------- App.js
-
---------- TaskList.js
-
---------- TaskDetails.js
-
---------- PaymentHistory.js
-
---------- PaymentDetails.js
-
------- services/
-
---------- taskService.js
-
---------- paymentService.js
-
------- utils/
-
---------- api.js
-
------- App.css
-
------- App.test.js
-
------- index.js
-
---- package.json
-
---- README.md
-
---- yarn.lock
-
-  
-
-node_service/
-
---- api/
-
------- v1/
-
---------- routes/
-
------------- tasks.js
-
------------- payments.js
-
---------- controllers/
-
------------- taskController.js
-
------------- paymentController.js
-
---------- models/
-
------------- taskModel.js
-
------------- paymentModel.js
-
---------- tests/
-
------------- taskController.test.js
-
------------- paymentController.test.js
-
---- app.js
-
---- package.json
-
---- README.md
-
-  
-
-docker-compose.yml
-
+npm install
 ```
+
+### Running the app
+To run the app you need to set the environment variables. You can do this by creating a `.env` file in the `services/auth_service` directory. The `.env` file should look like this:
+
+```bash
+# .env
+
+
+
