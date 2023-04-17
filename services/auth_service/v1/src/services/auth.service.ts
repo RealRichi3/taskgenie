@@ -3,12 +3,12 @@ import { Response, NextFunction } from 'express';
 import { sendEmail } from './email.service';
 import { AuthCode } from '../models/auth.model';
 import { NotFoundError } from '../utils/errors';
-import { IUserDoc, TProfile, TUserWithProfile, TUserWithProfileAndStatus } from '../models/types/user.types';
+import { IUserDoc, TUserWithProfileAndStatus } from '../models/types/user.types';
 import { IAuthCodeDoc } from '../models/types/auth.types';
 import { TAuthToken, UserWithStatus } from '../types';
 import { BadRequestError } from '../utils/errors';
 import * as config from '../config';
-import { IStatus, IStatusDoc } from '../models/types/status.types';
+import { IStatusDoc } from '../models/types/status.types';
 import { User } from '../models/user.model';
 
 /**

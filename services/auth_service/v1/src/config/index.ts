@@ -30,8 +30,6 @@ export const EMAIL_HOST: string = process.env.EMAIL_HOST as string,
     OAUTH_REFRESH_TOKEN: string = process.env.OAUTH_REFRESH_TOKEN as string,
     OAUTH_ACCESS_TOKEN: string = process.env.OAUTH_ACCESS_TOKEN as string,
     GOOGLE_SIGNIN_CLIENT_ID: string = process.env.GOOGLE_SIGNIN_CLIENT_ID as string,
-    HOST_ADMIN_EMAIL1: Email = process.env.HOST_ADMIN_EMAIL1 as Email,
-    HOST_ADMIN_EMAIL2: Email = process.env.HOST_ADMIN_EMAIL2 as Email,
     PROJECT_HOST_EMAIL: Email = process.env.PROJECT_HOST_EMAIL as Email;
 
 /* Server */

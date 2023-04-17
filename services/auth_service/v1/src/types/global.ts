@@ -1,4 +1,3 @@
-import { UserWithStatus } from ".";
 import { Request, Response, NextFunction } from "express";
 import * as z from "zod";
 import { TUserWithProfileAndStatus } from "../models/types/user.types";
