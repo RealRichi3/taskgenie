@@ -1,5 +1,5 @@
 import { IStatusDoc } from '../models/types/status.types';
-import { IUserDoc, IUsersDocs, TProfile } from '../models/types/user.types';
+import { IUserDoc } from '../models/types/user.types';
 import * as routerSchemas from './routerschemas';
 import { MongoServerError } from 'mongodb';
 import { Request } from 'express';
@@ -10,10 +10,6 @@ type MongoDuplicateKeyError = MongoServerError & {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     keyValue?: { [key: string]: any };
 };
-
-type main<T, K extends string, P> = K extends keyof T ?
-    Omit<T, K> & { [k in K]: P } :
-    T & { [k in K]: P }
 
 // Add populated field to existing type
 type WithPopulated<T, K extends string, P> = T & { [k in K]: P };
