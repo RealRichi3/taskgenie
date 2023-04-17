@@ -32,6 +32,19 @@ async function createAdminProfile(
     return doc;
 }
 
+async function createEndUserProfile(
+    user: IUserDoc,
+    session?: ClientSession
+): Promise<IUserDoc> {
+    const doc = session
+        ? model<IUserDoc>('EndUser')
+            .create([{ user: user._id }], { session })
+            .then(doc => doc[0])
+        : model<IUserDoc>('EndUser').create({ user: user._id });
+
+    return doc;
+}
+
 async function createProfile(
     this: IUserDoc,
     session?: ClientSession
@@ -41,6 +54,8 @@ async function createProfile(
             return createAdminProfile(this, session)
         case 'SuperAdmin':
             return createSuperAdminProfile(this, session)
+        case 'EndUser':
+            return createEndUserProfile(this, session)
     }
 }
 

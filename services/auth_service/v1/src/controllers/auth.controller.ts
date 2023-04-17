@@ -35,19 +35,13 @@ const userSignup = async (req: Request, res: Response, next: NextFunction) => {
 
     const {
         email, firstname, lastname,
-        password, role, address,
-        contact_details, name, website, ratings } = req.body;
+        password, role } = req.body;
     const user_info = {
         email: email as Email,
         firstname: firstname as string,
         lastname: lastname as string,
         password: password as string,
         role: role as IUser['role'],
-        address: address as string,
-        name: name as string,
-        ratings: ratings as 0 | 1 | 2 | 3 | 4 | 5,
-        website: website as string,
-        contact_details: contact_details as string,
     };
 
     // Check if user already exists
@@ -63,7 +57,7 @@ const userSignup = async (req: Request, res: Response, next: NextFunction) => {
     await session.withTransaction(async () => {
         // Create user
         user = (await User.create([user_info], { session }))[0]
-        
+
         if (user) {
             // Create users profile
             const profile = await user.createProfile<typeof user.role>(session);
