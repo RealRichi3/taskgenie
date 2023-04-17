@@ -54,7 +54,8 @@ router
         '/user/deactivate',
         basicAuth(),
         permit(['SuperAdmin']),
-        withAuthentication(deactivateUserAccount));
+        withAuthentication(deactivateUserAccount))
+    .post('/isloggedin', basicAuth())
 
 // router.use(permit(['SuperAdmin']))
 router
