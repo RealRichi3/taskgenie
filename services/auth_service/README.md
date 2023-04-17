@@ -96,3 +96,8 @@ And make sure that the port you are exposing is the same as the port you set in 
 Navigate to `http://localhost:<your_port>/api/v1/`.
 
 
+### Built by
+- Name: Riche Moluno
+- Github: [RealRichi3](https://github.com/RealRichi3)
+- Email: [molunorichie@gmail.com](mailto:molunorichie@gmail.com)
+- Twitter: [MolunoRiche](https://twitter.com/MolunoRiche)
