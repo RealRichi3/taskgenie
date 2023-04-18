@@ -1,7 +1,7 @@
 import Mongoose from 'mongoose';
 import { NodeENV } from '../types';
 import * as config from '../config';
-import connectRedis from './redis'
+import connectToRedisDB from './redis'
 
 function getDBConnectionString(env: NodeENV): string {
     switch (env) {
@@ -25,7 +25,9 @@ async function initMongoDBConnection() {
 
 async function initRedisConnection() {
     try {
-        await connectRedis
+        await connectToRedisDB
+
+        console.log('Connection to REDIS database successful')
     } catch (error) {
         console.log('An erro occured while connecting to REDIS')
         process.exit(1)
