@@ -7,7 +7,8 @@ export const MONGO_URI: string = process.env.MONGO_URI as string,
     REDIS_USERNAME: string = process.env.REDIS_USERNAME as string,
     REDIS_PASSWORD: string = process.env.REDIS_PASSWORD as string,
     REDIS_HOST: string = process.env.REDIS_HOST as string,
-    REDIS_PORT: number = parseInt(process.env.REDIS_PORT as string, 10) || 6379;
+    REDIS_PORT: number = parseInt(process.env.REDIS_PORT as string, 10) || 6379,
+    REDIS_URL: string = process.env.REDIS_URL as string;
 
 export const PORT: number = parseInt(process.env.PORT as string, 10) || 5555;
 
