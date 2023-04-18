@@ -1,11 +1,7 @@
 import Mongoose from 'mongoose';
 import { NodeENV } from '../types';
 import * as config from '../config';
-import redis, { RedisClientType } from 'redis';
-import { Client } from 'redis-om'
-import { REDIS_URL } from '../config'
-
-const redis_client = new Client()
+import connectRedis from './redis'
 
 function getDBConnectionString(env: NodeENV): string {
     switch (env) {
@@ -18,16 +14,6 @@ function getDBConnectionString(env: NodeENV): string {
     }
 }
 
-async function initRedisConnection() {
-    try {
-        await redis_client.open(REDIS_URL)
-        console.log(`Connection to REDIS database successful`);
-    } catch (error) {
-        console.log(`Error connecting to REDIS database: ${error}`);
-        process.exit(1);
-    }
-}
-
 async function initMongoDBConnection() {
     const mongo_url: string = getDBConnectionString(config.NODE_ENV);
 
@@ -35,6 +21,15 @@ async function initMongoDBConnection() {
     await Mongoose.connect(mongo_url);
 
     console.log(`Connection to ${Mongoose.connection.name} MongoDB database successful`);
+}
+
+async function initRedisConnection() {
+    try {
+        await connectRedis
+    } catch (error) {
+        console.log('An erro occured while connecting to REDIS')
+        process.exit(1)
+    }
 }
 
 export async function connectToDatabase() {
