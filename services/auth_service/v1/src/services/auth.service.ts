@@ -199,6 +199,20 @@ export async function getAuthTokens(
         expiresIn: config.JWT_REFRESH_EXP,
     });
 
+    saveTokenToCacheMemory({
+        auth_type: token_type,
+        email: user.email,
+        data: access_token,
+        expiry: expiry
+    })
+
+    saveTokenToCacheMemory({
+        auth_type: token_type,
+        email: user.email,
+        data: refresh_token,
+        expiry: config.JWT_REFRESH_EXP
+    })
+
     return {
         access_token,
         // If the secret is the same as the access token secret,

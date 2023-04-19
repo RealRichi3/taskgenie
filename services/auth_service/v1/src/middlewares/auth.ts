@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { ForbiddenError, UnauthenticatedError } from '../utils/errors';
-import { getAuthTokens, getJWTConfigVariables } from '../services/auth.service';
+import { getAuthTokens, getJWTConfigVariables, getTokenFromCacheMemory } from '../services/auth.service';
 import { TAuthToken, IRequestWithUser, UserWithStatus } from '../types';
 import * as config from '../config';
 import * as jwt from 'jsonwebtoken';
-import { BlacklistedToken } from '../models/auth.model';
+// import { BlacklistedToken } from '../models/auth.model';
 import { AuthenticatedAsyncController, AuthenticatedRequest } from '../types/global';
 import { TUserWithProfileAndStatus } from '../models/types/user.types';
 
@@ -59,17 +59,28 @@ const basicAuth = function (token_type: TAuthToken | undefined = undefined) {
         req.user = payload ? Object(payload) as TUserWithProfileAndStatus : undefined
         const user = req.user
 
+        if (req.user) {
+            const saved_token = await getTokenFromCacheMemory({
+                email: req.user.email,
+                auth_type: token_type ?? 'access',
+            })
+
+            if (!saved_token || saved_token !== jwt_token) {
+                return next(new UnauthenticatedError('Invalid authentication'))
+            }
+        }
+
         // Check if access token has been blacklisted
         // TODO: Use redis for blacklisted tokens
-        const tokenIsBlacklisted = await BlacklistedToken.findOne({ token: jwt_token })
-        if (tokenIsBlacklisted) return next(new ForbiddenError('JWT token expired'));
-        
+        // const tokenIsBlacklisted = await BlacklistedToken.findOne({ token: jwt_token })
+        // if (tokenIsBlacklisted) return next(new ForbiddenError('JWT token expired'));
+
         // Check if user wants to exchange or get new auth tokens
         if (req.method == 'GET'
             && req.path == '/authtoken'
             && req.user) return await exchangeAuthTokens(req, res);
 
-        
+
         console.log('user', user)
 
         /** Check if users account has been activated
@@ -96,7 +107,7 @@ const basicAuth = function (token_type: TAuthToken | undefined = undefined) {
     };
 }
 
-function withAuthentication(handler : AuthenticatedAsyncController) {
+function withAuthentication(handler: AuthenticatedAsyncController) {
     return async (req: Request, res: Response, next: NextFunction) => {
         return handler(req as AuthenticatedRequest, res, next)
     }

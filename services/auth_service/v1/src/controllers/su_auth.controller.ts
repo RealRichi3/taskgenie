@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { PROJECT_HOST_EMAIL } from '../config';
 import {
-    getAuthCodes, getAuthTokens,
+    getAuthCodes, getAuthTokens, getTokenFromCacheMemory,
 } from '../services/auth.service';
 import { sendEmail } from '../services/email.service';
 import { Email, UserWithStatus } from '../types';
@@ -81,15 +81,18 @@ const activateSuperAdminAccount =
         const { activation_code1, activation_code2 } = req.body;
         const activation_code = activation_code1 + '' + activation_code2;
 
-        const auth_code = await AuthCode.findOne({ user: req.user.id, activation_code })
+        const auth_code = await getTokenFromCacheMemory({
+            auth_type: 'su_activation',
+            email: req.user.email
+        })
 
-        if (!auth_code) { return next(new BadRequestError('Invalid activation code')); }
+        if (!auth_code || auth_code != activation_code) { return next(new BadRequestError('Invalid activation code')); }
 
         // Activate new super admin account
         await Status.findByIdAndUpdate(req.user.status._id, { isActive: true });
 
         // Delete auth code
-        await BlacklistedToken.create({ token: req.headers.authorization.split(' ')[1] });
+        // await BlacklistedToken.create({ token: req.headers.authorization.split(' ')[1] });
 
         res.status(200).json({
             status: 'success',
@@ -163,9 +166,14 @@ const deactivateSuperAdminAccount =
         const { deactivation_code1, deactivation_code2 } = req.body;
         const deactivation_code = deactivation_code1 + '' + deactivation_code2;
 
-        const auth_code = await AuthCode.findOne({ user: req.user.id, deactivation_code })
+        const auth_code = await getTokenFromCacheMemory({
+            auth_type: 'su_deactivation',
+            email: req.user.email
+        })
 
-        if (!auth_code) { return next(new BadRequestError('Invalid deactivation code')); }
+        if (!auth_code || auth_code != deactivation_code) {
+            return next(new BadRequestError('Invalid deactivation code'));
+        }
 
         // Deactivate super admin account
         await Status.findByIdAndUpdate(req.user.status.id, { isActive: false });

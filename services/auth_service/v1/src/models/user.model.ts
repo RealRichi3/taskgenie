@@ -7,7 +7,6 @@ import {
     IUser, IUserDoc, IUserMethods, IUserModel
 } from './types/user.types';
 import { createProfile, getProfile } from './profile';
-import { AuthCode } from './auth.model';
 import { NODE_ENV } from '../config';
 
 const options = { timestamps: true, toObject: { virtuals: true }, toJSON: { virtuals: true } };
@@ -98,7 +97,6 @@ user_schema.pre('validate', async function (next) {
             (status.isActive = this.role == 'EndUser' ? true : false);
 
         await status.save();
-        await AuthCode.create({ user: this._id });
     }
 
     next();
