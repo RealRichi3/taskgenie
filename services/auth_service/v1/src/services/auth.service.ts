@@ -1,16 +1,13 @@
+import { NextFunction, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { Response, NextFunction } from 'express';
-import { sendEmail } from './email.service';
-import { AuthCodeRepository, AuthTokenRepository } from '../models/auth.model';
-import { NotFoundError } from '../utils/errors';
+import * as config from '../config';
+import redis_client from '../database/redis';
+import { IStatusDoc } from '../models/types/status.types';
 import { IUserDoc, TUserWithProfileAndStatus } from '../models/types/user.types';
-import { IAuthCode, IAuthToken } from '../models/types/auth.types';
+import { User } from '../models/user.model';
 import { Email, TAuthToken, UserWithStatus } from '../types';
 import { BadRequestError } from '../utils/errors';
-import * as config from '../config';
-import { IStatusDoc } from '../models/types/status.types';
-import { User } from '../models/user.model';
-import redis_client from '../database/redis';
+import { sendEmail } from './email.service';
 
 /**
  * Generate Required Config Variables
@@ -69,6 +66,7 @@ interface TokenData {
     data: string | number,
     auth_type: TAuthToken,
 }
+
 async function saveTokenToCacheMemory(token_data: TokenData) {
     const { email, expiry, data, auth_type } = token_data
 
@@ -76,6 +74,17 @@ async function saveTokenToCacheMemory(token_data: TokenData) {
 
     redis_client.set(key, data)
     redis_client.expire(key, expiry)
+}
+
+async function getTokenFromCacheMemory
+    (token_data: { auth_type: TAuthToken, email: Email }) {
+    const { auth_type, email } = token_data
+
+    const key = `${auth_type}:${email}`
+
+    const auth_code = await redis_client.get(key)
+
+    return auth_code
 }
 
 type TGetAuthCodesResponse = {
@@ -94,6 +103,7 @@ type TGetAuthCodesResponse = {
         deactivation_code2: number;
     }
 }
+
 /**
  * Get auth codes
  *
@@ -118,24 +128,29 @@ export async function getAuthCodes<T extends keyof TGetAuthCodesResponse>(
         deactivation_code: number | undefined,
         auth_code: number;
 
-    if (code_type === 'verification') {
-        verification_code = random_number;
-        auth_code = verification_code
-    } else if (code_type === 'password_reset') {
-        password_reset_code = random_number;
-        auth_code = password_reset_code
-    } else if (code_type === 'su_activation') {
-        activation_code1 = random_number;
-        activation_code2 = Math.floor(100000 + Math.random() * 900000);
-        activation_code = parseInt(`${activation_code1}${activation_code2}` as string, 10);
-        auth_code = activation_code
-    } else if (code_type === 'su_deactivation') {
-        deactivation_code1 = random_number;
-        deactivation_code2 = Math.floor(100000 + Math.random() * 900000);
-        deactivation_code = parseInt(`${deactivation_code1}${deactivation_code2}` as string, 10);
-        auth_code = deactivation_code
-    } else {
-        throw new Error('Invalid code type')
+    switch (code_type) {
+        case 'verification':
+            verification_code = random_number;
+            auth_code = verification_code;
+            break;
+        case 'password_reset':
+            password_reset_code = random_number;
+            auth_code = password_reset_code;
+            break;
+        case 'su_activation':
+            activation_code1 = random_number;
+            activation_code2 = Math.floor(100000 + Math.random() * 900000);
+            activation_code = parseInt(`${activation_code1}${activation_code2}` as string, 10);
+            auth_code = activation_code;
+            break;
+        case 'su_deactivation':
+            deactivation_code1 = random_number;
+            deactivation_code2 = Math.floor(100000 + Math.random() * 900000);
+            deactivation_code = parseInt(`${deactivation_code1}${deactivation_code2}` as string, 10);
+            auth_code = deactivation_code;
+            break;
+        default:
+            throw new Error('Invalid code type');
     }
 
     await saveTokenToCacheMemory({
@@ -252,4 +267,9 @@ export async function handleExistingUser(
             : await handleUnverifiedUser(existing_user, res);
 
     return response as Response | NextFunction;
+}
+
+export {
+    getTokenFromCacheMemory,
+    saveTokenToCacheMemory
 }
