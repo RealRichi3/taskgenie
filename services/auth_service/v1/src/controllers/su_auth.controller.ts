@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { PROJECT_HOST_EMAIL } from '../config';
 import {
-    getAuthCodes, getAuthTokens, getTokenFromCacheMemory,
+    getAuthCodes, getAuthTokens, getAuthFromCacheMemory,
 } from '../services/auth.service';
 import { sendEmail } from '../services/email.service';
 import { Email, UserWithStatus } from '../types';
@@ -81,8 +81,9 @@ const activateSuperAdminAccount =
         const { activation_code1, activation_code2 } = req.body;
         const activation_code = activation_code1 + '' + activation_code2;
 
-        const auth_code = await getTokenFromCacheMemory({
-            auth_type: 'su_activation',
+        const auth_code = await getAuthFromCacheMemory({
+            type: 'su_activation',
+            auth_class: 'code',
             email: req.user.email
         })
 
@@ -166,8 +167,9 @@ const deactivateSuperAdminAccount =
         const { deactivation_code1, deactivation_code2 } = req.body;
         const deactivation_code = deactivation_code1 + '' + deactivation_code2;
 
-        const auth_code = await getTokenFromCacheMemory({
-            auth_type: 'su_deactivation',
+        const auth_code = await getAuthFromCacheMemory({
+            type: 'su_deactivation',
+            auth_class: 'code',
             email: req.user.email
         })
 

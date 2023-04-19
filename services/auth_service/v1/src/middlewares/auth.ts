@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ForbiddenError, UnauthenticatedError } from '../utils/errors';
-import { getAuthTokens, getJWTConfigVariables, getTokenFromCacheMemory } from '../services/auth.service';
+import { getAuthTokens, getJWTConfigVariables, getAuthFromCacheMemory } from '../services/auth.service';
 import { TAuthToken, IRequestWithUser, UserWithStatus } from '../types';
 import * as config from '../config';
 import * as jwt from 'jsonwebtoken';
@@ -60,9 +60,10 @@ const basicAuth = function (token_type: TAuthToken | undefined = undefined) {
         const user = req.user
 
         if (req.user) {
-            const saved_token = await getTokenFromCacheMemory({
+            const saved_token = await getAuthFromCacheMemory({
                 email: req.user.email,
-                auth_type: token_type ?? 'access',
+                type: token_type ?? 'access',
+                auth_class: 'token'
             })
 
             if (!saved_token || saved_token !== jwt_token) {

@@ -5,7 +5,7 @@ import redis_client from '../database/redis';
 import { IStatusDoc } from '../models/types/status.types';
 import { IUserDoc, TUserWithProfileAndStatus } from '../models/types/user.types';
 import { User } from '../models/user.model';
-import { Email, TAuthToken, UserWithStatus } from '../types';
+import { Email, TAuthCode, TAuthToken, UserWithStatus } from '../types';
 import { BadRequestError } from '../utils/errors';
 import { sendEmail } from './email.service';
 
@@ -60,41 +60,59 @@ export function getJWTConfigVariables(config_type: TAuthToken): {
     }
 }
 
-interface TokenData {
+interface AuthTokenData {
     email: Email,
     expiry: number,
-    data: string | number,
-    auth_type: TAuthToken,
+    token: string | number,
+    type: TAuthToken,
 }
 
-async function deleteTokenFromCacheMemory
-    (token_data: { auth_type: TAuthToken, email: Email }) {
-        const { auth_type, email } = token_data
+async function deleteAuthFromCacheMemory
+    (token_data: { type: TAuthToken, auth_class: 'code' | 'token',  email: Email }) {
+    const { type, auth_class, email } = token_data
 
-        const key = `${auth_type}:${email}`
-    
-        const auth_code = await redis_client.del(key)
-    
-        return auth_code
+    const key = `${type}_${auth_class}:${email}`
+
+    const auth_code = await redis_client.del(key)
+
+    return auth_code
 }
 
-async function saveTokenToCacheMemory(token_data: TokenData) {
-    const { email, expiry, data, auth_type } = token_data
-    console.log(token_data)
+interface AuthCodeData {
+    email: Email,
+    expiry: number,
+    code: string | number,
+    type: TAuthCode
+}
 
-    const key = `${auth_type}:${email}`
+async function saveCodeToCacheMemory(code_data: AuthCodeData) {
+    const { email, expiry, code, type } = code_data
+    
+    const key = `${type}_code:${email}`
     console.log(key)
 
-    const auth_token = await redis_client.setEx(key, 1000000000, data.toString())
+    const auth_code = await redis_client.setEx(key, expiry, code.toString())
+
+    return auth_code
+}
+
+async function saveTokenToCacheMemory(token_data: AuthTokenData) {
+    const { email, expiry, token, type } = token_data
+    console.log(token_data)
+
+    const key = `${type}_token:${email}`
+    console.log(key)
+
+    const auth_token = await redis_client.setEx(key, expiry, token.toString())
 
     return auth_token
 }
 
-async function getTokenFromCacheMemory
-    (token_data: { auth_type: TAuthToken, email: Email }) {
-    const { auth_type, email } = token_data
+async function getAuthFromCacheMemory
+    (token_data: { type: TAuthToken, auth_class: 'code' | 'token',  email: Email }) {
+    const { type, auth_class, email } = token_data
 
-    const key = `${auth_type}:${email}`
+    const key = `${type}_${auth_class}:${email}`
     console.log(key)
 
     const auth_code = await redis_client.get(key)
@@ -128,7 +146,7 @@ type TGetAuthCodesResponse = {
  * @param {MongooseDocument | mongoose.Types.ObjectId } user
  * @returns
  */
-export async function getAuthCodes<T extends keyof TGetAuthCodesResponse>(
+export async function getAuthCodes<T extends TAuthCode>(
     user: IUserDoc,
     code_type: T
 ): Promise<TGetAuthCodesResponse[T]> {
@@ -168,10 +186,10 @@ export async function getAuthCodes<T extends keyof TGetAuthCodesResponse>(
             throw new Error('Invalid code type');
     }
 
-    await saveTokenToCacheMemory({
+    await saveCodeToCacheMemory({
         email: user.email,
-        auth_type: code_type,
-        data: auth_code,
+        type: code_type,
+        code: auth_code,
         expiry: getJWTConfigVariables(code_type).expiry
     })
 
@@ -214,16 +232,16 @@ export async function getAuthTokens(
     });
 
     saveTokenToCacheMemory({
-        auth_type: token_type,
+        type: token_type,
         email: user.email,
-        data: access_token,
+        token: access_token,
         expiry: expiry
     })
 
     saveTokenToCacheMemory({
-        auth_type: 'refresh',
+        type: 'refresh',
         email: user.email,
-        data: refresh_token,
+        token: refresh_token,
         expiry: config.JWT_REFRESH_EXP
     })
 
@@ -298,7 +316,7 @@ export async function handleExistingUser(
 }
 
 export {
-    getTokenFromCacheMemory,
+    getAuthFromCacheMemory,
     saveTokenToCacheMemory,
-    deleteTokenFromCacheMemory
+    deleteAuthFromCacheMemory
 }

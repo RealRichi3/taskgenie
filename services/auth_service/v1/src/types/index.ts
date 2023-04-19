@@ -20,12 +20,7 @@ type NodeENV = 'dev' | 'test' | 'prod';
 
 type Email = string & { __brand: 'email' };
 
-type TAuthCode = {
-    password_reset: 'password_reset_code';
-    verification: 'verification_code';
-    activation: 'activation_code';
-    deactivation: 'deactivation_code';
-}
+type TAuthCode =  'password_reset' | 'verification' | 'su_activation' | 'su_deactivation';
 type TAuthToken = 'access' | 'refresh' | 'password_reset' | 'verification' | 'su_activation' | 'su_deactivation';
 
 interface IRequestWithUser extends Request {
