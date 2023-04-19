@@ -41,7 +41,6 @@ const requestSuperAdminAccountActivation =
             activation_code1, activation_code2
         } = await getAuthCodes(existing_su, 'su_activation');
 
-        console.log(activation_code1, activation_code2)
         // Send first activation code to user
         sendEmail({
             to: email,
@@ -86,9 +85,6 @@ const activateSuperAdminAccount =
             email: req.user.email
         })
 
-        console.log(auth_code)
-        console.log(activation_code)
-
         if (!auth_code || auth_code != activation_code) {
             return next(new BadRequestError('Invalid activation code'));
         }
@@ -96,17 +92,17 @@ const activateSuperAdminAccount =
         // Activate new super admin account
         await Status.findByIdAndUpdate(req.user.status._id, { isActive: true });
 
-        // // Delete auth code
-        // deleteAuthFromCacheMemory({
-        //     auth_class: 'code',
-        //     type: 'su_activation',
-        //     email: req.user.email
-        // })
-        // deleteAuthFromCacheMemory({
-        //     auth_class: 'token',
-        //     type: 'su_activation',
-        //     email: req.user.email
-        // })
+        // Delete auth code
+        deleteAuthFromCacheMemory({
+            auth_class: 'code',
+            type: 'su_activation',
+            email: req.user.email
+        })
+        deleteAuthFromCacheMemory({
+            auth_class: 'token',
+            type: 'su_activation',
+            email: req.user.email
+        })
 
         res.status(200).json({
             status: 'success',
@@ -186,9 +182,6 @@ const deactivateSuperAdminAccount =
             email: req.user.email
         })
 
-        console.log(auth_code)
-        console.log(deactivation_code)
-
         if (!auth_code || auth_code != deactivation_code) {
             return next(new BadRequestError('Invalid deactivation code'));
         }
@@ -196,17 +189,19 @@ const deactivateSuperAdminAccount =
         // Deactivate super admin account
         await Status.findByIdAndUpdate(req.user.status.id, { isActive: false });
 
-        // // Delete auth code
-        // deleteAuthFromCacheMemory({
-        //     auth_class: 'code',
-        //     type: 'su_deactivation',
-        //     email: req.user.email
-        // })
-        // deleteAuthFromCacheMemory({
-        //     auth_class: 'token',
-        //     type: 'su_deactivation',
-        //     email: req.user.email
-        // })
+        // Delete auth code
+        deleteAuthFromCacheMemory({
+            auth_class: 'code',
+            type: 'su_deactivation',
+            email: req.user.email
+        })
+
+        // Delete deactivation token
+        deleteAuthFromCacheMemory({
+            auth_class: 'token',
+            type: 'su_deactivation',
+            email: req.user.email
+        })
 
         res.status(200).json({
             status: 'success',
