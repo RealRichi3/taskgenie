@@ -8,7 +8,6 @@ import { Email, UserWithStatus } from '../types';
 import { AuthenticatedRequest } from '../types/global';
 import { Status } from '../models/status.model';
 import { User } from '../models/user.model';
-import { AuthCode, BlacklistedToken } from '../models/auth.model';
 import { BadRequestError } from '../utils/errors';
 
 const requestSuperAdminAccountActivation =

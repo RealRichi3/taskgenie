@@ -90,7 +90,7 @@ user_schema.pre('validate', async function (next) {
     if (this.isNew) {
         const status = new Status({ user: this._id });
 
-        NODE_ENV == 'dev'
+        NODE_ENV == 'test'
             ? // Activate and verify user if in development mode
             ([status.isActive, status.isVerified] = [true, true])
             : // Only activate user if role is EndUser (user is still required to verify account)

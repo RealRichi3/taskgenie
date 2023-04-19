@@ -68,7 +68,7 @@ interface AuthTokenData {
 }
 
 async function deleteAuthFromCacheMemory
-    (token_data: { type: TAuthToken, auth_class: 'code' | 'token',  email: Email }) {
+    (token_data: { type: TAuthToken, auth_class: 'code' | 'token', email: Email }) {
     const { type, auth_class, email } = token_data
 
     const key = `${type}_${auth_class}:${email}`
@@ -86,7 +86,7 @@ interface AuthCodeData {
 
 async function saveCodeToCacheMemory(code_data: AuthCodeData) {
     const { email, expiry, code, type } = code_data
-    
+
     const key = `${type}_code:${email}`
     const auth_code = await redis_client.setEx(key, expiry, code.toString())
 
@@ -103,7 +103,7 @@ async function saveTokenToCacheMemory(token_data: AuthTokenData) {
 }
 
 async function getAuthFromCacheMemory
-    (token_data: { type: TAuthToken, auth_class: 'code' | 'token',  email: Email }) {
+    (token_data: { type: TAuthToken, auth_class: 'code' | 'token', email: Email }) {
     const { type, auth_class, email } = token_data
 
     const key = `${type}_${auth_class}:${email}`
@@ -138,10 +138,10 @@ type TGetAuthCodesResponse = {
  * @param {MongooseDocument | mongoose.Types.ObjectId } user
  * @returns
  */
-export async function getAuthCodes<T extends TAuthCode>(
-    user: IUserDoc,
-    code_type: T
-): Promise<TGetAuthCodesResponse[T]> {
+export async function getAuthCodes<T extends TAuthCode>
+    (user: IUserDoc, code_type: T)
+    : Promise<TGetAuthCodesResponse[T]> {
+        
     const random_number = Math.floor(100000 + Math.random() * 900000);
     let verification_code: number | undefined,
         password_reset_code: number | undefined,
@@ -158,22 +158,26 @@ export async function getAuthCodes<T extends TAuthCode>(
             verification_code = random_number;
             auth_code = verification_code;
             break;
+
         case 'password_reset':
             password_reset_code = random_number;
             auth_code = password_reset_code;
             break;
+
         case 'su_activation':
             activation_code1 = random_number;
             activation_code2 = Math.floor(100000 + Math.random() * 900000);
             activation_code = parseInt(`${activation_code1}${activation_code2}` as string, 10);
             auth_code = activation_code;
             break;
+
         case 'su_deactivation':
             deactivation_code1 = random_number;
             deactivation_code2 = Math.floor(100000 + Math.random() * 900000);
             deactivation_code = parseInt(`${deactivation_code1}${deactivation_code2}` as string, 10);
             auth_code = deactivation_code;
             break;
+
         default:
             throw new Error('Invalid code type');
     }
@@ -184,6 +188,13 @@ export async function getAuthCodes<T extends TAuthCode>(
         code: auth_code,
         expiry: getJWTConfigVariables(code_type).expiry
     })
+
+    console.log(
+        verification_code,
+        password_reset_code,
+        activation_code1, activation_code2,
+        deactivation_code1, deactivation_code2
+    )
 
     return {
         verification_code,
@@ -202,10 +213,10 @@ export async function getAuthCodes<T extends TAuthCode>(
  * @param {TAuthToken} token_type
  * @returns {Promise<{ access_token: string; refresh_token: string | undefined }>
  */
-export async function getAuthTokens(
-    user: UserWithStatus,
-    token_type: TAuthToken = 'access'
-): Promise<{ access_token: string; refresh_token: string | undefined }> {
+export async function getAuthTokens
+    (user: UserWithStatus, token_type: TAuthToken = 'access')
+    : Promise<{ access_token: string; refresh_token: string | undefined }> {
+
     const { secret, expiry } = getJWTConfigVariables(token_type);
 
     const user_ = await User.findById(user._id).populate<UserWithStatus>('status')
@@ -257,8 +268,8 @@ export async function getAuthTokens(
  *
  * @returns { access_token: string}
  */
-export async function handleUnverifiedUser(
-    unverified_user: UserWithStatus, res: Response)
+export async function handleUnverifiedUser
+    (unverified_user: UserWithStatus, res: Response)
     : Promise<Response> {
 
     // Get verificateion code

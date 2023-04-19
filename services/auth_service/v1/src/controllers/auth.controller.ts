@@ -123,7 +123,7 @@ const verifyUserEmail = async (req: AuthenticatedRequest, res: Response, next: N
         email: req.user.email
     })
 
-    if (!auth_code || auth_code == verification_code.toString()) {
+    if (!auth_code || auth_code != verification_code.toString()) {
         return next(new BadRequestError('Invalid verification code'))
     }
 
