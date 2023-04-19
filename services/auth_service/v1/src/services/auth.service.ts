@@ -89,6 +89,8 @@ async function saveCodeToCacheMemory(code_data: AuthCodeData) {
 
     const key = `${type}_code:${email}`
     const auth_code = await redis_client.setEx(key, expiry, code.toString())
+    console.log(auth_code)
+    console.log(key)
 
     return auth_code
 }
@@ -108,6 +110,9 @@ async function getAuthFromCacheMemory
 
     const key = `${type}_${auth_class}:${email}`
     const auth_code = await redis_client.get(key)
+
+    console.log(key)
+    console.log(auth_code)
 
     return auth_code
 }
@@ -141,7 +146,7 @@ type TGetAuthCodesResponse = {
 export async function getAuthCodes<T extends TAuthCode>
     (user: IUserDoc, code_type: T)
     : Promise<TGetAuthCodesResponse[T]> {
-        
+
     const random_number = Math.floor(100000 + Math.random() * 900000);
     let verification_code: number | undefined,
         password_reset_code: number | undefined,

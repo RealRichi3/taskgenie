@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { PROJECT_HOST_EMAIL } from '../config';
 import {
-    getAuthCodes, getAuthTokens, getAuthFromCacheMemory,
+    getAuthCodes, getAuthTokens, getAuthFromCacheMemory, deleteAuthFromCacheMemory,
 } from '../services/auth.service';
 import { sendEmail } from '../services/email.service';
 import { Email, UserWithStatus } from '../types';
@@ -18,7 +18,6 @@ const requestSuperAdminAccountActivation =
         const existing_su = await User.findOne({ email, role: 'SuperAdmin' })
             .populate<UserWithStatus>('status');
 
-
         // If user doesn't  exists
         if (!existing_su) {
             return next(new BadRequestError('Super admin account does not exist'));
@@ -27,6 +26,7 @@ const requestSuperAdminAccountActivation =
         existing_su.status.isActive = false
         await existing_su.status.save()
         await existing_su.save()
+
         // If user is not verified
         if (!existing_su.status.isVerified) {
             return next(new BadRequestError('Super admin account is not verified'));
@@ -39,7 +39,7 @@ const requestSuperAdminAccountActivation =
 
         const {
             activation_code1, activation_code2
-        } = await getAuthCodes(existing_su._id, 'su_activation');
+        } = await getAuthCodes(existing_su, 'su_activation');
 
         console.log(activation_code1, activation_code2)
         // Send first activation code to user
@@ -86,13 +86,27 @@ const activateSuperAdminAccount =
             email: req.user.email
         })
 
-        if (!auth_code || auth_code != activation_code) { return next(new BadRequestError('Invalid activation code')); }
+        console.log(auth_code)
+        console.log(activation_code)
+
+        if (!auth_code || auth_code != activation_code) {
+            return next(new BadRequestError('Invalid activation code'));
+        }
 
         // Activate new super admin account
         await Status.findByIdAndUpdate(req.user.status._id, { isActive: true });
 
-        // Delete auth code
-        // await BlacklistedToken.create({ token: req.headers.authorization.split(' ')[1] });
+        // // Delete auth code
+        // deleteAuthFromCacheMemory({
+        //     auth_class: 'code',
+        //     type: 'su_activation',
+        //     email: req.user.email
+        // })
+        // deleteAuthFromCacheMemory({
+        //     auth_class: 'token',
+        //     type: 'su_activation',
+        //     email: req.user.email
+        // })
 
         res.status(200).json({
             status: 'success',
@@ -126,7 +140,7 @@ const requestSuperAdminAccountDeactivation =
 
         const {
             deactivation_code1, deactivation_code2
-        } = await getAuthCodes(existing_su._id, 'su_deactivation');
+        } = await getAuthCodes(existing_su, 'su_deactivation');
 
         // Send first deactivation code to user
         sendEmail({
@@ -156,7 +170,7 @@ const requestSuperAdminAccountDeactivation =
             status: 'success',
             message: 'Super admin account deactivation code sent to user email',
             data: {
-                access_token: (await getAuthTokens(existing_su._id, 'su_deactivation')).access_token
+                access_token: (await getAuthTokens(existing_su, 'su_deactivation')).access_token
             }
         })
     }
@@ -172,6 +186,9 @@ const deactivateSuperAdminAccount =
             email: req.user.email
         })
 
+        console.log(auth_code)
+        console.log(deactivation_code)
+
         if (!auth_code || auth_code != deactivation_code) {
             return next(new BadRequestError('Invalid deactivation code'));
         }
@@ -179,8 +196,17 @@ const deactivateSuperAdminAccount =
         // Deactivate super admin account
         await Status.findByIdAndUpdate(req.user.status.id, { isActive: false });
 
-        // Delete auth code
-        // await BlacklistedToken.create({ token: req.headers.authorization.split(' ')[1] });
+        // // Delete auth code
+        // deleteAuthFromCacheMemory({
+        //     auth_class: 'code',
+        //     type: 'su_deactivation',
+        //     email: req.user.email
+        // })
+        // deleteAuthFromCacheMemory({
+        //     auth_class: 'token',
+        //     type: 'su_deactivation',
+        //     email: req.user.email
+        // })
 
         res.status(200).json({
             status: 'success',
