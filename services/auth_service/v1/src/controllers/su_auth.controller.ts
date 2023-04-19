@@ -179,7 +179,7 @@ const deactivateSuperAdminAccount =
         await Status.findByIdAndUpdate(req.user.status.id, { isActive: false });
 
         // Delete auth code
-        await BlacklistedToken.create({ token: req.headers.authorization.split(' ')[1] });
+        // await BlacklistedToken.create({ token: req.headers.authorization.split(' ')[1] });
 
         res.status(200).json({
             status: 'success',

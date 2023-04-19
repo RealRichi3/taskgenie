@@ -80,9 +80,6 @@ const basicAuth = function (token_type: TAuthToken | undefined = undefined) {
             && req.path == '/authtoken'
             && req.user) return await exchangeAuthTokens(req, res);
 
-
-        console.log('user', user)
-
         /** Check if users account has been activated
          * 
          *  Some Some requests do not require users account to be activated

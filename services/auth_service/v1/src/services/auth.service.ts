@@ -67,13 +67,27 @@ interface TokenData {
     auth_type: TAuthToken,
 }
 
+async function deleteTokenFromCacheMemory
+    (token_data: { auth_type: TAuthToken, email: Email }) {
+        const { auth_type, email } = token_data
+
+        const key = `${auth_type}:${email}`
+    
+        const auth_code = await redis_client.del(key)
+    
+        return auth_code
+}
+
 async function saveTokenToCacheMemory(token_data: TokenData) {
     const { email, expiry, data, auth_type } = token_data
+    console.log(token_data)
 
     const key = `${auth_type}:${email}`
+    console.log(key)
 
-    redis_client.set(key, data)
-    redis_client.expire(key, expiry)
+    const auth_token = await redis_client.setEx(key, 1000000000, data.toString())
+
+    return auth_token
 }
 
 async function getTokenFromCacheMemory
@@ -81,6 +95,7 @@ async function getTokenFromCacheMemory
     const { auth_type, email } = token_data
 
     const key = `${auth_type}:${email}`
+    console.log(key)
 
     const auth_code = await redis_client.get(key)
 
@@ -192,7 +207,6 @@ export async function getAuthTokens(
     const data = { ...user_doc, profile: user_profile } as TUserWithProfileAndStatus
     // data.profile = { profile: user_doc.profile, user_profile: await user_profile }
 
-    console.log(data)
     // Access token usecase may vary, so we can't use the same
     const access_token = jwt.sign({ ...data }, secret, { expiresIn: expiry });
     const refresh_token = jwt.sign({ ...data }, config.JWT_REFRESH_SECRET, {
@@ -207,7 +221,7 @@ export async function getAuthTokens(
     })
 
     saveTokenToCacheMemory({
-        auth_type: token_type,
+        auth_type: 'refresh',
         email: user.email,
         data: refresh_token,
         expiry: config.JWT_REFRESH_EXP
@@ -285,5 +299,6 @@ export async function handleExistingUser(
 
 export {
     getTokenFromCacheMemory,
-    saveTokenToCacheMemory
+    saveTokenToCacheMemory,
+    deleteTokenFromCacheMemory
 }
