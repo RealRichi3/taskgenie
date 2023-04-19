@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken';
 import { Response, NextFunction } from 'express';
 import { sendEmail } from './email.service';
-import { AuthCode } from '../models/auth.model';
+import { AuthCodeRepository, AuthTokenRepository } from '../models/auth.model';
 import { NotFoundError } from '../utils/errors';
 import { IUserDoc, TUserWithProfileAndStatus } from '../models/types/user.types';
-import { IAuthCodeDoc } from '../models/types/auth.types';
+import { IAuthCode, IAuthToken } from '../models/types/auth.types';
 import { TAuthToken, UserWithStatus } from '../types';
 import { BadRequestError } from '../utils/errors';
 import * as config from '../config';
@@ -97,22 +97,20 @@ export async function getAuthCodes<T extends keyof TGetAuthCodesResponse>(
         activation_code1, activation_code2, activation_code,
         deactivation_code1, deactivation_code2, deactivation_code;
 
-    let users_auth_code: IAuthCodeDoc | null;
+    let users_auth_code: IAuthCode | null;
 
     switch (code_type) {
         case 'verification':
             verification_code = random_number;
-            users_auth_code = await AuthCode.findOneAndUpdate(
-                { user: user._id },
-                { verification_code },
-                { new: true }
-            );
+            // eslint-disable-next-line no-case-declarations
+            const a  = await AuthCodeRepository.search().where('user').equal(user._id.toString())
 
+            console.log(a)
             break;
 
         case 'password_reset':
             password_reset_code = random_number;
-            users_auth_code = await AuthCode.findOneAndUpdate(
+            users_auth_code = await AuthCodeRepository.findOneAndUpdate(
                 { user: user._id },
                 { password_reset_code },
                 { new: true }
@@ -123,14 +121,14 @@ export async function getAuthCodes<T extends keyof TGetAuthCodesResponse>(
             activation_code1 = random_number;
             activation_code2 = Math.floor(100000 + Math.random() * 900000);
             activation_code = `${activation_code1}${activation_code2}`;
-            users_auth_code = await AuthCode.findOneAndUpdate({ user: user._id }, { activation_code }, { new: true })
+            users_auth_code = await AuthCodeRepository.findOneAndUpdate({ user: user._id }, { activation_code }, { new: true })
             break;
 
         case 'su_deactivation':
             deactivation_code1 = random_number;
             deactivation_code2 = Math.floor(100000 + Math.random() * 900000);
             deactivation_code = `${deactivation_code1}${deactivation_code2}`;
-            users_auth_code = await AuthCode.findOneAndUpdate({ user: user._id }, { deactivation_code }, { new: true })
+            users_auth_code = await AuthCodeRepository.findOneAndUpdate({ user: user._id }, { deactivation_code }, { new: true })
             break;
 
         default:

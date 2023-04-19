@@ -9,7 +9,7 @@ import { Email, WithPopulated, UserWithStatus } from '../types';
 import { AuthenticatedRequest } from '../types/global';
 import { Status, IStatusDoc } from '../models/status.model';
 import { User, IUserDoc } from '../models/user.model';
-import { AuthCode, BlacklistedToken } from '../models/auth.model';
+import { BlacklistedToken } from '../models/auth.model';
 import { IPasswordDoc, Password } from '../models/password.model';
 import { BadRequestError, ForbiddenError, InternalServerError } from '../utils/errors';
 import { IUser } from '../models/types/user.types';
@@ -115,22 +115,22 @@ const verifyUserEmail = async (req: AuthenticatedRequest, res: Response, next: N
     // Get user
     const user = req.user
 
-    if (user.status.isVerified) return next(new BadRequestError('User already verified'));
+    // if (user.status.isVerified) return next(new BadRequestError('User already verified'));
 
-    // Check if verification code is correct
-    const auth_code = await AuthCode.findOne({ user: user._id, });
+    // // Check if verification code is correct
+    // const auth_code = await AuthCode.findOne({ user: user._id, });
 
-    if (auth_code?.verification_code !== verification_code) {
-        return next(new BadRequestError('Invalid verification code'))
-    }
+    // if (auth_code?.verification_code !== verification_code) {
+    //     return next(new BadRequestError('Invalid verification code'))
+    // }
 
-    // Verify user
-    await Status.findOneAndUpdate({ user: user._id }, { isVerified: true });
+    // // Verify user
+    // await Status.findOneAndUpdate({ user: user._id }, { isVerified: true });
 
-    await auth_code.updateOne({ verification_code: undefined })
+    // await auth_code.updateOne({ verification_code: undefined })
 
-    // Blacklist access token
-    await BlacklistedToken.create({ token: req.headers.authorization.split(' ')[1] })
+    // // Blacklist access token
+    // await BlacklistedToken.create({ token: req.headers.authorization.split(' ')[1] })
 
     res.status(200).send({
         status: 'success',
@@ -202,19 +202,19 @@ const resetPassword = async (req: AuthenticatedRequest, res: Response, next: Nex
     const { password_reset_code, new_password } = req.body;
 
     // Check if password reset code is correct
-    const auth_code = await AuthCode.findOne({ user: req.user._id, password_reset_code });
+    // const auth_code = await AuthCode.findOne({ user: req.user._id, password_reset_code });
 
-    if (!auth_code) return next(new BadRequestError('Invalid password reset code'));
+    // if (!auth_code) return next(new BadRequestError('Invalid password reset code'));
 
-    // Update password
-    const password = await Password.findOne({ user: req.user._id });
+    // // Update password
+    // const password = await Password.findOne({ user: req.user._id });
 
-    password
-        ? await password.updatePassword(new_password)
-        : next(new InternalServerError('An error occurred'));
+    // password
+    //     ? await password.updatePassword(new_password)
+    //     : next(new InternalServerError('An error occurred'));
 
-    // Blacklist access token
-    await BlacklistedToken.create({ token: req.headers.authorization.split(' ')[1] });
+    // // Blacklist access token
+    // await BlacklistedToken.create({ token: req.headers.authorization.split(' ')[1] });
 
     res.status(200).send({
         status: 'success',
@@ -290,8 +290,8 @@ const logout = async (req: AuthenticatedRequest, res: Response) => {
     const refresh_token = req.body.refresh_token;
 
     // Blacklist access token
-    await BlacklistedToken.create({ token: access_token });
-    await BlacklistedToken.create({ token: refresh_token });
+    // await BlacklistedToken.create({ token: access_token });
+    // await BlacklistedToken.create({ token: refresh_token });
 
     res.status(200).send({
         status: 'success',

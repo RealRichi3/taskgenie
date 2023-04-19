@@ -13,7 +13,7 @@ const NODE_ENV = process.env.NODE_ENV as NodeENV;
 const path = NODE_ENV ? `${__dirname}/.env.${NODE_ENV}` : `${__dirname}/.env`;
 dotenv.config({ path });
 
-import { connectToDatabase } from './database';
+import { connectToDatabase } from './database/index';
 import { startExpressServer } from './app';
 
 async function startServer() {

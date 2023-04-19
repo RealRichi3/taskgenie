@@ -1,32 +1,49 @@
-import { Model, model, Schema } from 'mongoose';
-import { IAuthCodeDoc, IBlacklistedToken } from './types/auth.types';
+import { Entity, Schema } from 'redis-om';
+import redis_client from '../database/redis'
 
-const options = { timestamp: true, toObject: { virtuals: true }, toJSON: { virtuals: true } };
+class AuthCode extends Entity {
+    constructor () {
+        super()
+                
+        user!: string;
+        verification_code?: number;
+        password_reset_code?: number;
+        activation_code?: number;
+        deactivation_code?: number;
+    }
+}
 
-const authcode_schema = new Schema<IAuthCodeDoc>(
-    {
-        user: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
-        verification_code: { type: Number },
-        password_reset_code: { type: Number },
-        activation_code: { type: String },
-        deactivation_code: { type: Number },
-        createdAt: { type: Date, default: Date.now },
-    },
-    options
-);
+class AuthToken extends Entity { }
+class BlacklistedToken extends Entity { }
 
-const blacklistedtoken_schema = new Schema<IBlacklistedToken>(
-    {
-        token: { type: String, required: true },
-        createdAt: { type: Date, default: Date.now },
-    },
-    options
-);
+const auth_code_schema = new Schema(AuthCode, {
+    user: { type: 'string' },
+    verification_code: { type: 'number' },
+    password_reset_code: { type: 'number' },
+    activation_code: { type: 'number' },
+    deactivation_code: { type: 'number' },
+})
 
-const AuthCode: Model<IAuthCodeDoc> = model<IAuthCodeDoc>('AuthCode', authcode_schema);
-const BlacklistedToken: Model<IBlacklistedToken> = model<IBlacklistedToken>(
-    'BlacklistedToken',
-    blacklistedtoken_schema
-);
+const auth_token_schema = new Schema(AuthToken, {
+    user: { type: 'string' },
+    access_token: { type: 'string' },
+    refresh_token: { type: 'string' }
+})
 
-export { AuthCode, BlacklistedToken };
+const blacklisted_token_schema = new Schema(BlacklistedToken, {
+    user: { type: 'string' },
+    token: { type: 'string' }
+})
+
+const AuthCodeRepository = redis_client.fetchRepository(auth_code_schema)
+const AuthTokenRepository = redis_client.fetchRepository(auth_token_schema)
+const BlacklistedTokenRepository = redis_client.fetchRepository(blacklisted_token_schema)
+
+export {
+    AuthCode,
+    AuthToken,
+    BlacklistedToken,
+    AuthCodeRepository,
+    AuthTokenRepository,
+    BlacklistedTokenRepository
+};

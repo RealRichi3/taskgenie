@@ -4,25 +4,20 @@ import { IUser } from './user.types';
 interface IBlacklistedToken extends Document {
     user: Types.ObjectId | IUser;
     token: string;
-    createdAt?: Date;
-    updatedAt?: Date;
 }
 
 interface IAuthCode {
-    user: Types.ObjectId | IUser;
+    user: string,
     verification_code?: number;
     password_reset_code?: number;
     activation_code?: number;
     deactivation_code?: number;
-    createdAt?: Date;
-    updatedAt?: Date;
-}
-interface IAuthCodeDoc extends IAuthCode, Document { }
-
-interface IAuthCodeWithoutUser extends Document {
-    user: undefined;
 }
 
-type TAuthCodeKeys = keyof IAuthCodeWithoutUser;
+interface IAuthToken {
+    user: string;
+    access_token: string;
+    refresh_token: string;
+}
 
-export { IBlacklistedToken, IAuthCode, IAuthCodeDoc, TAuthCodeKeys};
+export { IBlacklistedToken, IAuthCode, IAuthToken};
