@@ -72,7 +72,6 @@ async function deleteAuthFromCacheMemory
     const { type, auth_class, email } = token_data
 
     const key = `${type}_${auth_class}:${email}`
-
     const auth_code = await redis_client.del(key)
 
     return auth_code
@@ -89,8 +88,6 @@ async function saveCodeToCacheMemory(code_data: AuthCodeData) {
     const { email, expiry, code, type } = code_data
     
     const key = `${type}_code:${email}`
-    console.log(key)
-
     const auth_code = await redis_client.setEx(key, expiry, code.toString())
 
     return auth_code
@@ -98,11 +95,8 @@ async function saveCodeToCacheMemory(code_data: AuthCodeData) {
 
 async function saveTokenToCacheMemory(token_data: AuthTokenData) {
     const { email, expiry, token, type } = token_data
-    console.log(token_data)
 
     const key = `${type}_token:${email}`
-    console.log(key)
-
     const auth_token = await redis_client.setEx(key, expiry, token.toString())
 
     return auth_token
@@ -113,8 +107,6 @@ async function getAuthFromCacheMemory
     const { type, auth_class, email } = token_data
 
     const key = `${type}_${auth_class}:${email}`
-    console.log(key)
-
     const auth_code = await redis_client.get(key)
 
     return auth_code

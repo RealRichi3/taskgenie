@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { Request, Response, NextFunction } from 'express';
 import {
+    deleteAuthFromCacheMemory,
     getAuthCodes, getAuthTokens,
     handleExistingUser, handleUnverifiedUser
 } from '../services/auth.service';
@@ -214,7 +215,11 @@ const resetPassword = async (req: AuthenticatedRequest, res: Response, next: Nex
     //     : next(new InternalServerError('An error occurred'));
 
     // // Blacklist access token
-    // await BlacklistedToken.create({ token: req.headers.authorization.split(' ')[1] });
+    await deleteAuthFromCacheMemory({
+        auth_class: 'code',
+        type: 'password_reset',
+        email: req.user.email,
+    })
 
     res.status(200).send({
         status: 'success',
@@ -285,13 +290,19 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
  */
 const logout = async (req: AuthenticatedRequest, res: Response) => {
     const { authorization } = req.headers;
-    const access_token = authorization.split(' ')[1];
-
-    const refresh_token = req.body.refresh_token;
 
     // Blacklist access token
-    // await BlacklistedToken.create({ token: access_token });
-    // await BlacklistedToken.create({ token: refresh_token });
+    deleteAuthFromCacheMemory({
+        auth_class: 'token',
+        email: req.user.email,
+        type: 'access',
+    })
+
+    deleteAuthFromCacheMemory({
+        auth_class: 'token',
+        email: req.user.email,
+        type: 'refresh',
+    })
 
     res.status(200).send({
         status: 'success',
