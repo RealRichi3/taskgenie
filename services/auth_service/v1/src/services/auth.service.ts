@@ -5,11 +5,12 @@ import { AuthCodeRepository, AuthTokenRepository } from '../models/auth.model';
 import { NotFoundError } from '../utils/errors';
 import { IUserDoc, TUserWithProfileAndStatus } from '../models/types/user.types';
 import { IAuthCode, IAuthToken } from '../models/types/auth.types';
-import { TAuthToken, UserWithStatus } from '../types';
+import { Email, TAuthToken, UserWithStatus } from '../types';
 import { BadRequestError } from '../utils/errors';
 import * as config from '../config';
 import { IStatusDoc } from '../models/types/status.types';
 import { User } from '../models/user.model';
+import redis_client from '../database/redis';
 
 /**
  * Generate Required Config Variables
@@ -23,7 +24,7 @@ import { User } from '../models/user.model';
  */
 export function getJWTConfigVariables(config_type: TAuthToken): {
     secret: string;
-    expiry: string;
+    expiry: number;
 } {
     switch (config_type) {
         case 'access':
@@ -62,6 +63,21 @@ export function getJWTConfigVariables(config_type: TAuthToken): {
     }
 }
 
+interface TokenData {
+    email: Email,
+    expiry: number,
+    data: string | number,
+    auth_type: TAuthToken,
+}
+async function saveTokenToCacheMemory(token_data: TokenData) {
+    const { email, expiry, data, auth_type } = token_data
+
+    const key = `${auth_type}:${email}`
+
+    redis_client.set(key, data)
+    redis_client.expire(key, expiry)
+}
+
 type TGetAuthCodesResponse = {
     'password_reset': {
         password_reset_code: number;
@@ -92,61 +108,46 @@ export async function getAuthCodes<T extends keyof TGetAuthCodesResponse>(
     code_type: T
 ): Promise<TGetAuthCodesResponse[T]> {
     const random_number = Math.floor(100000 + Math.random() * 900000);
-    let verification_code,
-        password_reset_code,
-        activation_code1, activation_code2, activation_code,
-        deactivation_code1, deactivation_code2, deactivation_code;
+    let verification_code: number | undefined,
+        password_reset_code: number | undefined,
+        activation_code1: number | undefined,
+        activation_code2: number | undefined,
+        activation_code: number | undefined,
+        deactivation_code1: number | undefined,
+        deactivation_code2: number | undefined,
+        deactivation_code: number | undefined,
+        auth_code: number;
 
-    let users_auth_code: IAuthCode | null;
-
-    switch (code_type) {
-        case 'verification':
-            verification_code = random_number;
-            // eslint-disable-next-line no-case-declarations
-            const a  = await AuthCodeRepository.search().where('user').equal(user._id.toString())
-
-            console.log(a)
-            break;
-
-        case 'password_reset':
-            password_reset_code = random_number;
-            users_auth_code = await AuthCodeRepository.findOneAndUpdate(
-                { user: user._id },
-                { password_reset_code },
-                { new: true }
-            );
-            break;
-
-        case 'su_activation':
-            activation_code1 = random_number;
-            activation_code2 = Math.floor(100000 + Math.random() * 900000);
-            activation_code = `${activation_code1}${activation_code2}`;
-            users_auth_code = await AuthCodeRepository.findOneAndUpdate({ user: user._id }, { activation_code }, { new: true })
-            break;
-
-        case 'su_deactivation':
-            deactivation_code1 = random_number;
-            deactivation_code2 = Math.floor(100000 + Math.random() * 900000);
-            deactivation_code = `${deactivation_code1}${deactivation_code2}`;
-            users_auth_code = await AuthCodeRepository.findOneAndUpdate({ user: user._id }, { deactivation_code }, { new: true })
-            break;
-
-        default:
-            throw new Error(`Invalid code_type: ${code_type}`);
+    if (code_type === 'verification') {
+        verification_code = random_number;
+        auth_code = verification_code
+    } else if (code_type === 'password_reset') {
+        password_reset_code = random_number;
+        auth_code = password_reset_code
+    } else if (code_type === 'su_activation') {
+        activation_code1 = random_number;
+        activation_code2 = Math.floor(100000 + Math.random() * 900000);
+        activation_code = parseInt(`${activation_code1}${activation_code2}` as string, 10);
+        auth_code = activation_code
+    } else if (code_type === 'su_deactivation') {
+        deactivation_code1 = random_number;
+        deactivation_code2 = Math.floor(100000 + Math.random() * 900000);
+        deactivation_code = parseInt(`${deactivation_code1}${deactivation_code2}` as string, 10);
+        auth_code = deactivation_code
+    } else {
+        throw new Error('Invalid code type')
     }
 
-    if (!users_auth_code) throw new NotFoundError('User not found');
-
-    console.log({
-        verification_code: users_auth_code.verification_code,
-        password_reset_code: users_auth_code.password_reset_code,
-        activation_code1, activation_code2,
-        deactivation_code1, deactivation_code2,
+    await saveTokenToCacheMemory({
+        email: user.email,
+        auth_type: code_type,
+        data: auth_code,
+        expiry: getJWTConfigVariables(code_type).expiry
     })
 
     return {
-        verification_code: users_auth_code.verification_code,
-        password_reset_code: users_auth_code.password_reset_code,
+        verification_code,
+        password_reset_code,
         activation_code1, activation_code2,
         deactivation_code1, deactivation_code2,
     } as TGetAuthCodesResponse[T]
