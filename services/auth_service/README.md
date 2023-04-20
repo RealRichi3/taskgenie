@@ -6,6 +6,7 @@ This is a simple API for managing authentication and authorization for your web 
 - Node.js
 - Typescript
 - MongoDB
+- Redis
 - Docker (optional)
 
 Download the project and install the dependencies.
@@ -26,6 +27,7 @@ To run the app you need to set the environment variables. You can do this by cre
 ```bash
 # .env
 MONGO_URI = <your_mongo_uri>
+REDIS_URL = <your_redis_db_url>
 PORT = <your_port>
 JWT_SECRET = <your_jwt_secret> 
 JWT_COOKIE_EXPIRES = <your_jwt_cookie_expires>

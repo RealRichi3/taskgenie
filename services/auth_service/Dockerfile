@@ -1,7 +1,5 @@
 FROM node:14-alpine
 
-RUN apk add --update redis
-
 WORKDIR /app
 
 COPY v1/package.json .
@@ -12,4 +10,4 @@ COPY v1/ .
 
 EXPOSE 5555
 
-CMD ["sh", "-c", "redis-server & npm run dev"]
+CMD ["npm",  "run",  "dev"]
