@@ -7,7 +7,6 @@ import {
     IUser, IUserDoc, IUserMethods, IUserModel
 } from './types/user.types';
 import { createProfile, getProfile } from './profile';
-import { AuthCode } from './auth.model';
 import { NODE_ENV } from '../config';
 
 const options = { timestamps: true, toObject: { virtuals: true }, toJSON: { virtuals: true } };
@@ -91,14 +90,13 @@ user_schema.pre('validate', async function (next) {
     if (this.isNew) {
         const status = new Status({ user: this._id });
 
-        NODE_ENV == 'dev'
+        NODE_ENV == 'test'
             ? // Activate and verify user if in development mode
             ([status.isActive, status.isVerified] = [true, true])
             : // Only activate user if role is EndUser (user is still required to verify account)
             (status.isActive = this.role == 'EndUser' ? true : false);
 
         await status.save();
-        await AuthCode.create({ user: this._id });
     }
 
     next();

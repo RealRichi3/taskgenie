@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 import { Request, Response, NextFunction } from 'express';
 import {
-    getAuthCodes, getAuthTokens,
+    deleteAuthFromCacheMemory,
+    getAuthCodes, getAuthFromCacheMemory, getAuthTokens,
     handleExistingUser, handleUnverifiedUser
 } from '../services/auth.service';
 import { sendEmail } from '../services/email.service';
@@ -9,7 +10,7 @@ import { Email, WithPopulated, UserWithStatus } from '../types';
 import { AuthenticatedRequest } from '../types/global';
 import { Status, IStatusDoc } from '../models/status.model';
 import { User, IUserDoc } from '../models/user.model';
-import { AuthCode, BlacklistedToken } from '../models/auth.model';
+import { BlacklistedToken } from '../models/auth.model';
 import { IPasswordDoc, Password } from '../models/password.model';
 import { BadRequestError, ForbiddenError, InternalServerError } from '../utils/errors';
 import { IUser } from '../models/types/user.types';
@@ -77,7 +78,6 @@ const userSignup = async (req: Request, res: Response, next: NextFunction) => {
 
     // Get access token
     const populated_user: UserWithStatus = await user.populate<UserWithStatus>('status')
-    console.log('handleUnverifiedUser')
     return await handleUnverifiedUser(populated_user.toObject(), res);
 };
 
@@ -114,23 +114,35 @@ const verifyUserEmail = async (req: AuthenticatedRequest, res: Response, next: N
 
     // Get user
     const user = req.user
-
     if (user.status.isVerified) return next(new BadRequestError('User already verified'));
 
-    // Check if verification code is correct
-    const auth_code = await AuthCode.findOne({ user: user._id, });
+    // // Check if verification code is correct
+    const auth_code = await getAuthFromCacheMemory({
+        auth_class: 'code',
+        type: 'verification',
+        email: req.user.email
+    })
 
-    if (auth_code?.verification_code !== verification_code) {
+    if (!auth_code || auth_code != verification_code.toString()) {
         return next(new BadRequestError('Invalid verification code'))
     }
 
-    // Verify user
+    // // Verify user
     await Status.findOneAndUpdate({ user: user._id }, { isVerified: true });
 
-    await auth_code.updateOne({ verification_code: undefined })
-
     // Blacklist access token
-    await BlacklistedToken.create({ token: req.headers.authorization.split(' ')[1] })
+    deleteAuthFromCacheMemory({
+        auth_class: 'token',
+        type: 'verification',
+        email: req.user.email
+    })
+
+    // Delete verification code
+    deleteAuthFromCacheMemory({
+        auth_class: 'code',
+        type: 'verification',
+        email: req.user.email
+    })
 
     res.status(200).send({
         status: 'success',
@@ -202,9 +214,15 @@ const resetPassword = async (req: AuthenticatedRequest, res: Response, next: Nex
     const { password_reset_code, new_password } = req.body;
 
     // Check if password reset code is correct
-    const auth_code = await AuthCode.findOne({ user: req.user._id, password_reset_code });
+    const auth_code = await getAuthFromCacheMemory({
+        auth_class: 'code',
+        type: 'password_reset',
+        email: req.user.email
+    })
 
-    if (!auth_code) return next(new BadRequestError('Invalid password reset code'));
+    if (!auth_code || auth_code != password_reset_code.toString()) {
+        return next(new BadRequestError('Invalid password reset code'));
+    }
 
     // Update password
     const password = await Password.findOne({ user: req.user._id });
@@ -213,8 +231,17 @@ const resetPassword = async (req: AuthenticatedRequest, res: Response, next: Nex
         ? await password.updatePassword(new_password)
         : next(new InternalServerError('An error occurred'));
 
-    // Blacklist access token
-    await BlacklistedToken.create({ token: req.headers.authorization.split(' ')[1] });
+    // // Blacklist access token
+    await deleteAuthFromCacheMemory({
+        auth_class: 'code',
+        type: 'password_reset',
+        email: req.user.email,
+    })
+    await deleteAuthFromCacheMemory({
+        auth_class: 'token',
+        type: 'password_reset',
+        email: req.user.email,
+    })
 
     res.status(200).send({
         status: 'success',
@@ -285,13 +312,19 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
  */
 const logout = async (req: AuthenticatedRequest, res: Response) => {
     const { authorization } = req.headers;
-    const access_token = authorization.split(' ')[1];
-
-    const refresh_token = req.body.refresh_token;
 
     // Blacklist access token
-    await BlacklistedToken.create({ token: access_token });
-    await BlacklistedToken.create({ token: refresh_token });
+    deleteAuthFromCacheMemory({
+        auth_class: 'token',
+        email: req.user.email,
+        type: 'access',
+    })
+
+    deleteAuthFromCacheMemory({
+        auth_class: 'token',
+        email: req.user.email,
+        type: 'refresh',
+    })
 
     res.status(200).send({
         status: 'success',
