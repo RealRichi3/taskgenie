@@ -11,6 +11,15 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+import logging
+import logging.config
+
+from django.utils.log import DEFAULT_LOGGING
+from dotenv import load_dotenv
+
+load_dotenv()
+logger = logging.getLogger(__name__)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +29,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-@oam#cbnjp1659m@%nm-31ut*51ep6&14t10b_hmi&5@*-edl2'
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(' ')
 
 
 # Application definition
@@ -37,6 +47,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'drf_yasg',
     'tasks',
 ]
 
@@ -75,11 +87,16 @@ WSGI_APPLICATION = 'zcore.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+	'default': {
+		'ENGINE': 'django.db.backends.postgresql',
+		'NAME': os.environ.get('POSTGRES_NAME'),
+		'USER': os.environ.get('POSTGRES_USER'),
+		'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+		'HOST': os.environ.get('POSTGRES_HOST'),
+		'PORT': os.environ.get('POSTGRES_PORT'),
+	}
 }
+
 
 
 # Password validation
@@ -106,7 +123,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Lagos'
 
 USE_I18N = True
 
@@ -124,3 +141,67 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',
+    ),
+    'DEFAULT_PAGINATION_CLASS': "rest_framework.pagination.PageNumberPagination",
+    'PAGE_SIZE': 12,
+
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+}
+
+
+LOG_LEVEL = "INFO"
+logging.config.dictConfig(
+    {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "console":{
+                "format": "%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
+            },
+            "file":{
+                "format": "%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
+            },
+            "django.server":DEFAULT_LOGGING["formatters"]["django.server"],
+        },
+        "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
+                "formatter": "console",
+            },
+            "file": {
+                "level": "INFO",
+                "class": "logging.FileHandler",
+                "formatter": "file",
+                "filename": "logs/tasks.log",
+            },
+            "django.server":DEFAULT_LOGGING["handlers"]["django.server"],
+        },
+        "loggers":{
+            "":{"level": "INFO", "handlers":["console","file"], "propagate":False},
+            "apps":{
+                "level": "INFO", "handlers":["console"], "propagate":False
+            },
+            "django.server":DEFAULT_LOGGING["formatters"]["django.server"], 
+        }    
+    }
+)
+
+
+
+EMAIL_BACKEND = 'djcelery_email.backends.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_USE_TLS = True
+EMAIL_PORT = os.environ.get('EMAIL_PORT')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = "info@taskgenie.com"
+DOMAIN = os.environ.get("DOMAIN")
+SITE_NAME = "TaskGenie"
+
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_BACKEND')
+CELERY_TIMEZONE = "Africa/Lagos"
