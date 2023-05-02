@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import {
     deleteAuthFromCacheMemory,
     getAuthCodes, getAuthFromCacheMemory, getAuthTokens,
-    handleExistingUser, handleUnverifiedUser
+    handleExistingUser, handleUnverifiedUser, saveTokenToCacheMemory
 } from '../services/auth.service';
 import { sendEmail } from '../services/email.service';
 import { Email, WithPopulated, UserWithStatus } from '../types';
@@ -14,6 +14,8 @@ import { BlacklistedToken } from '../models/auth.model';
 import { IPasswordDoc, Password } from '../models/password.model';
 import { BadRequestError, ForbiddenError, InternalServerError } from '../utils/errors';
 import { IUser } from '../models/types/user.types';
+import { randomUUID } from 'crypto';
+import { JWT_REFRESH_EXP } from '../config';
 
 /**
  * User signup
@@ -287,6 +289,21 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
     // Get access token
     const { access_token, refresh_token } = await getAuthTokens(user.toObject(), 'access');
+    
+    const token_bind = randomUUID()
+    await saveTokenToCacheMemory({
+        type: 'cookie_bind',
+        token: token_bind,
+        email: user.email,
+        expiry: JWT_REFRESH_EXP
+    })
+
+    res.cookie('cookie_bind_id', token_bind, {
+        httpOnly: true,
+        expires: new Date(Date.now() + JWT_REFRESH_EXP * 1000),
+        sameSite: 'strict',
+    });
+
 
     return res.status(200).send({
         status: 'success',
@@ -318,6 +335,12 @@ const logout = async (req: AuthenticatedRequest, res: Response) => {
         auth_class: 'token',
         email: req.user.email,
         type: 'access',
+    })
+    
+    deleteAuthFromCacheMemory({
+        auth_class: 'token',
+        email: req.user.email,
+        type: 'cookie_bind',
     })
 
     deleteAuthFromCacheMemory({

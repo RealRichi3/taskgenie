@@ -21,7 +21,7 @@ type NodeENV = 'dev' | 'test' | 'prod';
 type Email = string & { __brand: 'email' };
 
 type TAuthCode =  'password_reset' | 'verification' | 'su_activation' | 'su_deactivation';
-type TAuthToken = 'access' | 'refresh' | 'password_reset' | 'verification' | 'su_activation' | 'su_deactivation';
+type TAuthToken = 'access' | 'refresh' | 'password_reset' | 'verification' | 'su_activation' | 'su_deactivation' | 'cookie_bind';
 
 interface IRequestWithUser extends Request {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

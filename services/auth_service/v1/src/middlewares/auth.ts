@@ -42,6 +42,9 @@ async function exchangeAuthTokens(req: IRequestWithUser, res: Response) {
  */
 const basicAuth = function (token_type: TAuthToken | undefined = undefined) {
     return async (req: Request & { user?: UserWithStatus }, res: Response, next: NextFunction) => {
+        const cookie = req.cookies
+        const cookie_bind_id = cookie?.cookie_bind_id
+        
         // Get authorization header
         const auth_header = req.headers.authorization;
 
@@ -59,6 +62,7 @@ const basicAuth = function (token_type: TAuthToken | undefined = undefined) {
         req.user = payload ? Object(payload) as TUserWithProfileAndStatus : undefined
         const user = req.user
 
+        console.log(user)
         if (req.user) {
             const saved_token = await getAuthFromCacheMemory({
                 email: req.user.email,
@@ -79,7 +83,21 @@ const basicAuth = function (token_type: TAuthToken | undefined = undefined) {
         // Check if user wants to exchange or get new auth tokens
         if (req.method == 'GET'
             && req.path == '/authtoken'
-            && req.user) return await exchangeAuthTokens(req, res);
+            && req.user) {
+
+                // Check cookie bind id
+                const saved_id = await getAuthFromCacheMemory({
+                    email: req.user.email,
+                    type: 'cookie_bind',
+                    auth_class: 'token',
+                })  
+
+                if (saved_id !== cookie_bind_id) {
+                    return next(new UnauthenticatedError('Invalid cookie bind id'))
+                }
+
+                return await exchangeAuthTokens(req, res);
+            }
 
         /** Check if users account has been activated
          * 
