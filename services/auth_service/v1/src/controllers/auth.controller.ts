@@ -328,15 +328,13 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
  * @throws { BadRequestError } If access token is not provided
  */
 const logout = async (req: AuthenticatedRequest, res: Response) => {
-    const { authorization } = req.headers;
-
     // Blacklist access token
     deleteAuthFromCacheMemory({
         auth_class: 'token',
         email: req.user.email,
         type: 'access',
     })
-    
+
     deleteAuthFromCacheMemory({
         auth_class: 'token',
         email: req.user.email,
