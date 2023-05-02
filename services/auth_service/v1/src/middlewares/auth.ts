@@ -44,7 +44,8 @@ const basicAuth = function (token_type: TAuthToken | undefined = undefined) {
     return async (req: Request & { user?: UserWithStatus }, res: Response, next: NextFunction) => {
         const cookie = req.cookies
         console.log(cookie)
-        const cookie_bind_id = cookie?.bind_id
+        const cookie_bind_id = cookie?.cookie_bind_id
+        console.log(cookie_bind_id)
         
         // Get authorization header
         const auth_header = req.headers.authorization;

@@ -71,7 +71,6 @@
     "passport-github": "^1.1.0",
     "passport-google-oauth": "^2.0.0",
     "passport-google-oidc": "^0.1.0",
-    "redis": "^4.6.5",
     "redis-om": "^0.3.6",
     "stream": "^0.0.2",
     "supertest": "^6.3.0",
