@@ -336,6 +336,12 @@ const logout = async (req: AuthenticatedRequest, res: Response) => {
         email: req.user.email,
         type: 'access',
     })
+    
+    deleteAuthFromCacheMemory({
+        auth_class: 'token',
+        email: req.user.email,
+        type: 'cookie_bind',
+    })
 
     deleteAuthFromCacheMemory({
         auth_class: 'token',
