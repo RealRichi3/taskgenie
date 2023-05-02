@@ -42,6 +42,10 @@ async function exchangeAuthTokens(req: IRequestWithUser, res: Response) {
  */
 const basicAuth = function (token_type: TAuthToken | undefined = undefined) {
     return async (req: Request & { user?: UserWithStatus }, res: Response, next: NextFunction) => {
+        const cookie = req.cookies
+        console.log(cookie)
+        const cookie_bind_id = cookie?.bind_id
+        
         // Get authorization header
         const auth_header = req.headers.authorization;
 
@@ -59,6 +63,7 @@ const basicAuth = function (token_type: TAuthToken | undefined = undefined) {
         req.user = payload ? Object(payload) as TUserWithProfileAndStatus : undefined
         const user = req.user
 
+        console.log(user)
         if (req.user) {
             const saved_token = await getAuthFromCacheMemory({
                 email: req.user.email,

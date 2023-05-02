@@ -6,6 +6,7 @@ import cors from 'cors';
 import { NODE_ENV, PORT } from './config';
 import errorHandler from './middlewares/error_handler';
 import routeHandler from './routes';
+import cookieParser from 'cookie-parser';
 
 /**
  * Init Middlewares
@@ -36,6 +37,8 @@ function initExpressRouteHandler(app: Application): void {
     //         message: 'Welcome to Ride APP API built by molunorichie@gmail.com',
     //     });
     // });
+
+    app.use(cookieParser())
 
     /** Initialize Route Handler
      *
