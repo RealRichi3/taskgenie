@@ -1,0 +1,11 @@
+{
+    "services": {
+        "auth": {
+            "api_name": "auth",
+            "protocol": "http",
+            "host": "localhost",
+            "port": 8080,
+            "url": "http://localhost:8080/auth"
+        }
+    }
+}
