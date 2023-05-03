@@ -5,6 +5,8 @@ import {
     InternalServerError,
     UnauthenticatedError,
 } from '../utils/errors';
+import { Error } from 'mongoose';
+import { MongoDuplicateKeyError } from '../types'
 import { ZodError } from 'zod';
 
 /**

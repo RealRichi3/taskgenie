@@ -1,4 +1,13 @@
 import mongoose from "mongoose";
+import { MongoServerError } from 'mongodb';
+import { Request } from 'express';
+
+
+type MongoDuplicateKeyError = MongoServerError & {
+    code: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    keyValue?: { [key: string]: any };
+};
 
 type NodeENV = 'dev' | 'test' | 'prod';
 
@@ -37,5 +46,6 @@ export {
     Prettify,
     APIService,
     IService, IServiceDoc,
-    IInstance, IInstanceDoc 
+    IInstance, IInstanceDoc, 
+    MongoDuplicateKeyError
 }
