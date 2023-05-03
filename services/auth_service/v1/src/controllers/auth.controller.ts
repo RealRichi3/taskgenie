@@ -65,8 +65,6 @@ const userSignup = async (req: Request, res: Response, next: NextFunction) => {
             // Create users profile
             const profile = await user.createProfile<typeof user.role>(session);
 
-            console.log(profile)
-
             // Create password
             await Password.create([{ user: user._id, password }], { session });
         }
