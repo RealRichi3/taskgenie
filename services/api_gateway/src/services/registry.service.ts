@@ -1,28 +1,54 @@
 import fs from 'fs'
-import { APIService } from '../types'
-import reg from  '../registry.json'
-const registry = reg as APIService<false>[]
+import { Request } from 'express'
+import { APIService, IInstanceDoc, IServiceDoc, Registry } from '../types'
+import { Instance, Service } from '../models'
+const registry_data = fs.readFileSync('../registry.json', 'utf-8')
 
-async function addServiceToRegistry (service: APIService) {
-    const service_exists = registry.servicesp[]
-    // Check if servie is already registered
-    // If not, add it to the registry
-    // If it is, update it
-    // If not, create it
-    // If it does, read it
-    // If it is empty, add the service
-    // If it is not empty, check if the service is already registered
-
-
+type ServiceData = {
+    api_name: string;
+    version: number;
+    protocol: string;
+    host: string;
+    port: number;
 }
 
-async function removeServiceToRegistry () {}
+async function addServiceToRegistry(service: ServiceData, req: Request) {
+    let new_service: IServiceDoc | null
+    let new_instance: IInstanceDoc | undefined
+    let existing_instance: IInstanceDoc | undefined | null
+    const existing_service = await Service.findOne({ name: service.api_name })
 
-async function getServicesFromRegistry () {}
+    // Check if service has been registered before
+    if (!existing_service) {
+        // Service hasn't been registered, register and create instance
+        new_service = await Service.create(service);
+        new_instance = await Instance.create({ ...service, service: new_service })
+    } else {
+        // Service has been registered,
+        // Check if an instance exist for this current request
+        existing_instance = await Instance.findOne(
+            {
+                api_name: service.api_name,
+                port: service.port,
+                host: service.host,
+                protocol: service.protocol,
+            })
 
-async function getServiceFromRegistry () {}
+        if (!existing_instance) {
+            new_instance = await Instance.create({ ...service, service: existing_service._id})
+        }
+    }
 
-async function checkIfServiceIsRegistered () {}
+    return new_instance || existing_instance
+}
+
+async function removeServiceToRegistry() { }
+
+async function getServicesFromRegistry() { }
+
+async function getServiceFromRegistry() { }
+
+async function checkIfServiceIsRegistered() { }
 
 export {
     addServiceToRegistry,

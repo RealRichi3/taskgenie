@@ -24,6 +24,14 @@ interface APIService<T extends Boolean = true> {
     url: T extends true ? string : never
 }
 
+interface APIServiceDoc extends APIService, Document, { }
+
+interface Registry {
+    services: {
+        [k: string]: APIService<true>[]
+    }
+}
+
 interface IService {
     name: string;
     version: number;
@@ -32,20 +40,32 @@ interface IService {
 interface IServiceDoc extends IService, Document { }
 
 interface IInstance {
-    service_id: mongoose.Types.ObjectId;
+    service: mongoose.Types.ObjectId;
     protocol: string;
     host: string;
     url: string;
     port: number;
     last_heartbeat: Date;
 }
+
+type PopulateVirtualDoc<T, K extends string, U> = {
+    [k in keyof Omit<T, K>]: T[k];
+    [key in K]: U | null
+}
+
+type PopulateEmbeddedDoc<T, K extends keyof T, U> = {
+    [k in keyof Omit<T, K>]: T[k];
+    [key in K]: U
+}
+
 interface IInstanceDoc extends IInstance, Document { }
 
 export {
     NodeENV,
     Prettify,
-    APIService,
+    APIService, Registry,
     IService, IServiceDoc,
-    IInstance, IInstanceDoc, 
-    MongoDuplicateKeyError
+    IInstance, IInstanceDoc,
+    MongoDuplicateKeyError,
+    PopulateEmbeddedDoc, PopulateVirtualDoc
 }
