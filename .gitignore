@@ -1,0 +1,5 @@
+# hide all node_modules folders
+**/node_modules/
+./node_modules
+/services/auth_service/v1/node_modules
+/v1/src/.env*
