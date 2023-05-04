@@ -18,9 +18,9 @@ import cookieParser from 'cookie-parser';
  * @returns {void}
  */
 function initMiddlewares(app: Application) {
-    NODE_ENV == 'dev' ? app.use(morgan('dev')) : null;
+    NODE_ENV === 'dev' ? app.use(morgan('dev')) : null;
     app.use(express.json())
-    app.use(cors());
+    // app.use(cors());
 }
 
 /**
@@ -40,16 +40,16 @@ function initExpressRouteHandler(app: Application) {
      * based on the route prefix:
      * */
     router(app);
-    
+
     app.use(errorHandler);
-    
+
     app.all('*', (req: Request, res: Response, _next: NextFunction) => {
         res.status(404).send({
             status: 'error',
             message: 'Route not found',
         });
     });
-    
+
     return
 }
 
