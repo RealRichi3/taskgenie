@@ -29,17 +29,19 @@ async function addServiceToRegistry(service: ServiceData, req: Request) {
             // Check if an instance exist for this current request
             existing_instance = await Instance.findOne(
                 {
-                    name: service.name,
-                    port: service.port,
-                    host: service.host,
+                    service: existing_service._id,
                     protocol: service.protocol,
+                    host: service.host,
+                    port: service.port
                 })
     
             if (!existing_instance) {
                 new_instance = await Instance.create({ ...service, service: existing_service._id})
             }
         }
-    
+        
+        console.log(existing_service)
+        console.log(new_service)
         return new_instance || existing_instance
     } catch (error) {
         console.log(error)

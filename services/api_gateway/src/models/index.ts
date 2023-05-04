@@ -19,15 +19,15 @@ const instance_schema = new Schema<IInstanceDoc>({
     host: { type: String, required: true },
     url: { type: String, required: true },
     port: { type: Number, required: true },
-    last_heartbeat: { type: Date, required: true },
+    last_heartbeat: { type: Date, required: true, default: Date.now() },
 }, options)
 
-instance_schema.pre('save', function (next) {
+instance_schema.pre('validate', function (next) {
     this.url = `${this.protocol}://${this.host}:${this.port}`
     next()
 })
 
-service_schema.pre('save', function (next) {
+service_schema.pre('validate', function (next) {
     this.path = `/${this.name}/v${this.version}`
     next()
 })
