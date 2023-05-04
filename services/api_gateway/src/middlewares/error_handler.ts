@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
+import { Error } from 'mongoose';
+import { MongoDuplicateKeyError } from '../types';
 import {
     BadRequestError,
     CustomAPIError,
     InternalServerError,
     UnauthenticatedError,
 } from '../utils/errors';
-import { Error } from 'mongoose';
-import { MongoDuplicateKeyError } from '../types'
 import { ZodError } from 'zod';
 
 /**
@@ -22,7 +22,7 @@ import { ZodError } from 'zod';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function errorHandler(err: Error, req: Request, res: Response, next: NextFunction): Response {
     // log the error to the console, but only if the environment is not "test"
-    process.env.NODE_ENV !== 'test' ? console.log(err) : null;
+    // process.env.NODE_ENV !== 'test' ? console.log(err) : null;
 
     // create a variable to hold the custom error object
     let error: CustomAPIError | undefined;
