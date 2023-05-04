@@ -22,6 +22,16 @@ const instance_schema = new Schema<IInstanceDoc>({
     last_heartbeat: { type: Date, required: true },
 }, options)
 
+instance_schema.pre('save', function (next) {
+    this.url = `${this.protocol}://${this.host}:${this.port}`
+    next()
+})
+
+service_schema.pre('save', function (next) {
+    this.path = `/${this.name}/v${this.version}`
+    next()
+})
+
 const Service: Model<IServiceDoc> = model<IServiceDoc>('Service', service_schema)
 const Instance: Model<IInstanceDoc> = model<IInstanceDoc>('Instance', instance_schema)
 

@@ -5,7 +5,7 @@ import { Instance, Service } from '../models'
 import wrapper from '../middlewares/async_wrapper'
 
 type ServiceData = {
-    api_name: string;
+    name: string;
     version: number;
     protocol: string;
     host: string;
@@ -17,7 +17,7 @@ async function addServiceToRegistry(service: ServiceData, req: Request) {
         let new_service: IServiceDoc | null | undefined
         let new_instance: IInstanceDoc | undefined
         let existing_instance: IInstanceDoc | undefined | null
-        const existing_service = await Service.findOne({ name: service.api_name })
+        const existing_service = await Service.findOne({ name: service.name })
     
         // Check if service has been registered before
         if (!existing_service) {
@@ -29,7 +29,7 @@ async function addServiceToRegistry(service: ServiceData, req: Request) {
             // Check if an instance exist for this current request
             existing_instance = await Instance.findOne(
                 {
-                    api_name: service.api_name,
+                    name: service.name,
                     port: service.port,
                     host: service.host,
                     protocol: service.protocol,

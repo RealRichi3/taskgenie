@@ -3,12 +3,12 @@ import Registry, { addServiceToRegistry } from '../services/registry.service'
 
 const registerService = async (req: Request, res: Response, next: NextFunction) => {
     const {
-        protocol, host, port, api_name, version
+        protocol, host, port, name, version
     } = req.body
 
     const service =
         await addServiceToRegistry(
-            { protocol, host, port, api_name, version },
+            { protocol, host, port, name, version },
             req
         )
 
