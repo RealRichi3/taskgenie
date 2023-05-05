@@ -14,8 +14,8 @@ const router = Router()
 
 router
     .post('/service/register', routerValidator(schema.register_service), registerService)
-    .post('/service/unregister', basicAuth,  withAuthentication(unregisterService))
-    .post('/instance/unregister', basicAuth,  withAuthentication(unregisterInstance))
+    .post('/service/unregister', basicAuth, withAuthentication(unregisterService))
+    .post('/instance/unregister', basicAuth, withAuthentication(unregisterInstance))
     .get('/data', basicAuth, withAuthentication(getService))
     .get('/services', getServices)
 
