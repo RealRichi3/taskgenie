@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken'
 import { JWT_ACCESS_EXP, JWT_ACCESS_SECRET } from '../config'
 
 async function encodeData(data: object) {
-    const encoded_data = jwt.sign(data, JWT_ACCESS_SECRET, { expiresIn: JWT_ACCESS_EXP })
+    const encoded_data = jwt.sign(data, JWT_ACCESS_SECRET)
 
     return encoded_data
 }
