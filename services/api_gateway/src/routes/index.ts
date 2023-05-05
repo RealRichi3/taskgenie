@@ -6,26 +6,29 @@ import { Service } from '../models';
 import { IInstanceDoc, IServiceDoc, PopulateVirtualDoc } from '../types';
 import { NotFoundError } from '../utils/errors';
 
-async function microserviceRouter(req: Request, res: Response, next: NextFunction) {
-    console.log(req.originalUrl)
+async function proxyRequest(req: Request, res: Response, next: NextFunction) {
+    // Get the name of the API to be called
     const api_name = req.originalUrl.split('/')[2]
-    const dest = req.originalUrl.split('/host/' + api_name)[1]
-    console.log(api_name)
 
-    type ServiceWithInstance = PopulateVirtualDoc<IServiceDoc, 'instances', IInstanceDoc[]>
+    // Get the destination URL
+    const dest = req.originalUrl.split('/host/' + api_name)[1]
+
+    type ServiceWithInstance =
+        PopulateVirtualDoc<IServiceDoc, 'instances', IInstanceDoc[]>
+
+    // Get the service from the database
     const service =
         await Service
             .findOne({ name: api_name })
             .populate<ServiceWithInstance>('instances')
 
-    console.log(api_name)
-    console.log(service?.toObject())
     if (!service || !service.instances) {
         return next(new NotFoundError('Service not found'))
     }
 
     const destination_url = service.instances[0].url + dest
-    console.log(destination_url)
+
+    // Make the request to the destination URL
     const response =
         await axios({
             method: req.method,
@@ -35,8 +38,7 @@ async function microserviceRouter(req: Request, res: Response, next: NextFunctio
         })
             .then(res => res)
             .catch(err => err)
-    
-    console.log(response)
+
     res.status(response.response.status).send(response.response.data)
 }
 
@@ -45,5 +47,5 @@ export default function routeHandler(app: Application) {
     app.use('/host', router);
 
     router.use('/registry', registryRouter);
-    router.use('/', microserviceRouter);
+    router.use('/', proxyRequest);
 }
