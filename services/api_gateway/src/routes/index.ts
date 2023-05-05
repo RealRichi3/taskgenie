@@ -26,6 +26,7 @@ async function proxyRequest(req: Request, res: Response, next: NextFunction) {
         return next(new NotFoundError('Service not found'))
     }
 
+    // Add feat to get the least loaded instance
     const destination_url = service.instances[0].url + dest
 
     // Make the request to the destination URL
