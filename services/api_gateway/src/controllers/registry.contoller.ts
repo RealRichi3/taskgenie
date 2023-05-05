@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import Registry, { addServiceToRegistry } from '../utils/registry'
 import { encodeData } from '../utils/jwt';
 import { AuthenticatedRequest } from '../types';
+import { InternalServerError } from '../utils/errors';
 
 const registerService = async (req: Request, res: Response, next: NextFunction) => {
     const {
@@ -15,9 +16,7 @@ const registerService = async (req: Request, res: Response, next: NextFunction) 
         )
 
     if (!service) {
-        return res.status(500).json({
-            message: "Service could not be registered"
-        })
+        return next(new InternalServerError('Service could not be registered'))
     }
 
     const api_key = await encodeData(service.toObject())

@@ -14,7 +14,7 @@ const service_schema = new Schema<IServiceDoc>({
 }, options)
 
 const instance_schema = new Schema<IInstanceDoc>({
-    service: { type: Schema.Types.ObjectId, required: true },
+    service: { type: Schema.Types.ObjectId, required: true, ref: 'Service'},
     protocol: { type: String, required: true },
     host: { type: String, required: true },
     url: { type: String, required: true },

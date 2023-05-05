@@ -36,7 +36,7 @@ async function addServiceToRegistry(service: ServiceData, req: Request) {
                 protocol: service.protocol,
                 host: service.host,
                 port: service.port,
-            });
+            }).populate('service');
 
             if (!existing_instance) {
                 new_instance = await Instance.create({
@@ -46,9 +46,7 @@ async function addServiceToRegistry(service: ServiceData, req: Request) {
             }
         }
 
-        console.log(existing_service);
-        console.log(new_service);
-        return new_instance || existing_instance;
+        return new_instance?.populate('service') || existing_instance;
     } catch (error) {
         console.log(error);
         throw error;
