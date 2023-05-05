@@ -64,7 +64,6 @@ async function removeServiceFromRegistry(service_id: mongoose.Types.ObjectId) {
         await existing_service.deleteOne();
 
         // Delete all instances too
-
         await Instance.deleteMany({ service: service_id });
     } catch (error) {
         throw error;

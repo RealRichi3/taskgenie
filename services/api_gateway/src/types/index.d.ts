@@ -47,23 +47,21 @@ interface IInstance {
     last_heartbeat: Date;
 }
 interface IInstanceDoc extends IInstance, Document { }
-type InstanceWithEmbeddedService = PopulateEmbeddedDoc<IInstance, 'service', IService>
+type InstanceWithEMbeddedServiceDoc = PopulateEmbeddedDoc<IInstanceDoc, 'service', IServiceDoc>
 
 type PopulateVirtualDoc<T, K extends string, U> = {
     [k in keyof Omit<T, K>]: T[k];
-    [key in K]: U | null
-}
+} & { [key in K]: U | null }
 
 type PopulateEmbeddedDoc<T, K extends keyof T, U> = {
     [k in keyof Omit<T, K>]: T[k];
-    [key in K]: U
-}
+} & { [key in K]: U }
 
 interface AuthenticatedRequest extends Request {
     headers: {
         authorization: string
     },
-    instance: InstanceWithEmbeddedService 
+    instance: InstanceWithEMbeddedServiceDoc
 }
 
 interface AuthenticatedAsyncController {
