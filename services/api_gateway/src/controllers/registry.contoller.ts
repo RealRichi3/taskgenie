@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import Registry, { addServiceToRegistry } from '../services/registry.service'
+import Registry, { addServiceToRegistry } from '../utils/registry'
+import { encodeData } from '../utils/jwt';
 
 const registerService = async (req: Request, res: Response, next: NextFunction) => {
     const {
@@ -12,21 +13,32 @@ const registerService = async (req: Request, res: Response, next: NextFunction) 
             req
         )
 
-    console.log(service)
-
     if (!service) {
         return res.status(500).json({
             message: "Service could not be registered"
         })
     }
 
+    const api_key = await encodeData(service.toObject())
+
     return res.status(200).json({
         message: "Service registered successfully",
-        service
+        data: {
+            service,
+            api_key
+        }
     })
 }
 
 const unregisterService = async (req: Request, res: Response, next: NextFunction) => {
+
+    console.log(req.app.locals.host_api_key)
+
+    return res.status(200).json({
+        message: "Service unregistered successfully",
+        data: {
+        }
+    })
 }
 
 const getServices = async (req: Request, res: Response, next: NextFunction) => {
