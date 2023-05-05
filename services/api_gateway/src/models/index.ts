@@ -28,7 +28,7 @@ instance_schema.pre('validate', function (next) {
 })
 
 service_schema.pre('validate', function (next) {
-    this.path = `/${this.name}/v${this.version}`
+    this.path = `/${this.name}/`
     next()
 })
 
