@@ -1,6 +1,6 @@
 import fs from "fs";
 import { Request } from "express";
-import { APIService, IInstanceDoc, IServiceDoc, Registry } from "../types";
+import { APIService, IInstance, IInstanceDoc, IServiceDoc, Registry } from "../types";
 import { Instance, Service } from "../models";
 import wrapper from "../middlewares/async_wrapper";
 import mongoose from "mongoose";
@@ -73,9 +73,9 @@ async function removeServiceFromRegistry(service_id: mongoose.Types.ObjectId) {
     }
 }
 
-async function unregisterInstance(instance_id: mongoose.Types.ObjectId) {
+async function unregisterInstance(instance_data: IInstance) {
     try {
-        const existing_instance = await Instance.findById(instance_id);
+        const existing_instance = await Instance.findOne(instance_data);
 
         if (!existing_instance) {
             throw new Error("Instance not found");
