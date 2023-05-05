@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import Registry, { addServiceToRegistry } from '../utils/registry'
 import { encodeData } from '../utils/jwt';
+import { AuthenticatedRequest } from '../types';
 
 const registerService = async (req: Request, res: Response, next: NextFunction) => {
     const {
@@ -21,7 +22,7 @@ const registerService = async (req: Request, res: Response, next: NextFunction) 
 
     const api_key = await encodeData(service.toObject())
 
-    return res.status(200).json({
+    res.status(200).json({
         message: "Service registered successfully",
         data: {
             service,
@@ -30,10 +31,10 @@ const registerService = async (req: Request, res: Response, next: NextFunction) 
     })
 }
 
-const unregisterService = async (req: Request, res: Response, next: NextFunction) => {
+const unregisterService = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
 
 
-    return res.status(200).json({
+    res.status(200).json({
         message: "Service unregistered successfully",
         data: {
         }

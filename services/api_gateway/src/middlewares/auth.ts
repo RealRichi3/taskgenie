@@ -1,35 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
-import { ForbiddenError, UnauthenticatedError } from '../utils/errors';
-import { getAuthTokens, getJWTConfigVariables, getAuthFromCacheMemory } from '../services/auth.service';
-import { TAuthToken, IRequestWithUser, UserWithStatus, IInstance, IService, PopulateEmbeddedDoc } from '../types';
+import { UnauthenticatedError } from '../utils/errors';
+import { IInstance, IService, PopulateEmbeddedDoc } from '../types';
 import * as config from '../config';
 import * as jwt from 'jsonwebtoken';
 // import { BlacklistedToken } from '../models/auth.model';
-import { AuthenticatedAsyncController, AuthenticatedRequest } from '../types/global';
-import { TUserWithProfileAndStatus } from '../models/types/user.types';
-
-/**
- * Exchange Auth Tokens
- * 
- * @description Exchange refresh token for new authentication tokens
- * 
- * @param req 
- * @param res
- *  
- * @returns { access_token, refresh_token} 
- */
-async function exchangeAuthTokens(req: IRequestWithUser, res: Response) {
-    const { access_token, refresh_token } = await getAuthTokens(req.user as UserWithStatus, 'access')
-
-    return res.status(200).send({
-        status: 'success',
-        message: 'Successfully exchanged auth tokens',
-        data: {
-            access_token,
-            refresh_token
-        }
-    })
-}
+import { AuthenticatedAsyncController, AuthenticatedRequest } from '../types';
 
 type InstanceWithEmbeddedService = PopulateEmbeddedDoc<IInstance, 'service', IService>
 /**
@@ -41,7 +16,7 @@ type InstanceWithEmbeddedService = PopulateEmbeddedDoc<IInstance, 'service', ISe
  * 
  * @returns 
  */
-const basicAuth = function (token_type: TAuthToken | undefined = undefined) {
+const basicAuth = function () {
     return async (
         req: Request & { instance?: InstanceWithEmbeddedService },
         res: Response, next: NextFunction) => {

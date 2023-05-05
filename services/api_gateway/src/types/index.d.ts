@@ -1,6 +1,6 @@
 import mongoose, { Document } from "mongoose";
 import { MongoServerError } from 'mongodb';
-import { Request } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 type MongoDuplicateKeyError = MongoServerError & {
     code: number;
@@ -47,6 +47,7 @@ interface IInstance {
     last_heartbeat: Date;
 }
 interface IInstanceDoc extends IInstance, Document { }
+type InstanceWithEmbeddedService = PopulateEmbeddedDoc<IInstance, 'service', IService>
 
 type PopulateVirtualDoc<T, K extends string, U> = {
     [k in keyof Omit<T, K>]: T[k];
@@ -58,6 +59,16 @@ type PopulateEmbeddedDoc<T, K extends keyof T, U> = {
     [key in K]: U
 }
 
+interface AuthenticatedRequest extends Request {
+    headers: {
+        authorization: string
+    },
+    instance: InstanceWithEmbeddedService 
+}
+
+interface AuthenticatedAsyncController {
+    (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void>
+}
 
 export {
     NodeENV,
@@ -66,5 +77,6 @@ export {
     IService, IServiceDoc,
     IInstance, IInstanceDoc,
     MongoDuplicateKeyError,
-    PopulateEmbeddedDoc, PopulateVirtualDoc
+    PopulateEmbeddedDoc, PopulateVirtualDoc,
+    AuthenticatedAsyncController, AuthenticatedRequest
 }
