@@ -32,7 +32,6 @@ const registerService = async (req: Request, res: Response, next: NextFunction) 
 
 const unregisterService = async (req: Request, res: Response, next: NextFunction) => {
 
-    console.log(req.app.locals.host_api_key)
 
     return res.status(200).json({
         message: "Service unregistered successfully",

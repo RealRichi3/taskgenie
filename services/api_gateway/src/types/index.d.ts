@@ -1,7 +1,6 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 import { MongoServerError } from 'mongodb';
 import { Request } from 'express';
-
 
 type MongoDuplicateKeyError = MongoServerError & {
     code: number;
@@ -11,7 +10,7 @@ type MongoDuplicateKeyError = MongoServerError & {
 
 type NodeENV = 'dev' | 'test' | 'prod';
 
-type Prettify<T> {
+type Prettify<T> = {
     [k in keyof T]: T[k];
 }
 
@@ -47,6 +46,7 @@ interface IInstance {
     port: number;
     last_heartbeat: Date;
 }
+interface IInstanceDoc extends IInstance, Document { }
 
 type PopulateVirtualDoc<T, K extends string, U> = {
     [k in keyof Omit<T, K>]: T[k];
@@ -58,7 +58,6 @@ type PopulateEmbeddedDoc<T, K extends keyof T, U> = {
     [key in K]: U
 }
 
-interface IInstanceDoc extends IInstance, Document { }
 
 export {
     NodeENV,
