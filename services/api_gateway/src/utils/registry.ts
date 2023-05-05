@@ -1,9 +1,14 @@
-import fs from "fs";
 import { Request } from "express";
-import { APIService, IInstance, IInstanceDoc, IServiceDoc, Registry } from "../types";
+import {
+    IInstance,
+    IInstanceDoc,
+    IServiceDoc,
+    InstanceWithEmbeddedService,
+    WithID,
+} from "../types";
 import { Instance, Service } from "../models";
-import wrapper from "../middlewares/async_wrapper";
 import mongoose from "mongoose";
+import { BadRequestError } from "./errors";
 
 type ServiceData = {
     name: string;
@@ -70,17 +75,18 @@ async function removeServiceFromRegistry(service_id: mongoose.Types.ObjectId) {
     }
 }
 
-async function unregisterInstance(instance_data: IInstance) {
+async function deleteInstance(instance_data: InstanceWithEmbeddedService) {
     try {
-        const existing_instance = await Instance.findOne(instance_data);
+        const existing_instance = await Instance.findOne({ _id: instance_data._id });
 
         if (!existing_instance) {
-            throw new Error("Instance not found");
+            throw new BadRequestError("Instance not found");
         }
 
         await existing_instance.deleteOne();
     } catch (error) {
-        throw error;
+        console.log(error)
+        return error;
     }
 }
 
@@ -113,7 +119,7 @@ export {
     removeServiceFromRegistry,
     getServicesFromRegistry,
     getServiceFromRegistry,
-    unregisterInstance,
+    deleteInstance,
 };
 
 export default {
@@ -121,5 +127,5 @@ export default {
     removeServiceFromRegistry,
     getServicesFromRegistry,
     getServiceFromRegistry,
-    unregisterInstance,
+    deleteInstance,
 };

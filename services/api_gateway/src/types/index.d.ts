@@ -46,8 +46,10 @@ interface IInstance {
     port: number;
     last_heartbeat: Date;
 }
+type WithID<T> = T & { _id: mongoose.Types.ObjectId }
 interface IInstanceDoc extends IInstance, Document { }
-type InstanceWithEMbeddedServiceDoc = PopulateEmbeddedDoc<IInstanceDoc, 'service', IServiceDoc>
+type InstanceWithEmbeddedServiceDoc = PopulateEmbeddedDoc<IInstanceDoc, 'service', IServiceDoc>
+type InstanceWithEmbeddedService = PopulateEmbeddedDoc<WithID<IInstance>, 'service', WithID<IService>>
 
 type PopulateVirtualDoc<T, K extends string, U> = {
     [k in keyof Omit<T, K>]: T[k];
@@ -61,7 +63,7 @@ interface AuthenticatedRequest extends Request {
     headers: {
         authorization: string
     },
-    instance: InstanceWithEMbeddedServiceDoc
+    instance: InstanceWithEmbeddedService
 }
 
 interface AuthenticatedAsyncController {
@@ -69,12 +71,20 @@ interface AuthenticatedAsyncController {
 }
 
 export {
+    WithID,
     NodeENV,
     Prettify,
-    APIService, Registry,
-    IService, IServiceDoc,
-    IInstance, IInstanceDoc,
+    APIService,
+    Registry,
+    IService,
+    IServiceDoc,
+    IInstance,
+    IInstanceDoc,
     MongoDuplicateKeyError,
-    PopulateEmbeddedDoc, PopulateVirtualDoc,
-    AuthenticatedAsyncController, AuthenticatedRequest
+    PopulateEmbeddedDoc,
+    PopulateVirtualDoc,
+    AuthenticatedRequest,
+    AuthenticatedAsyncController,
+    InstanceWithEmbeddedService,
+    InstanceWithEmbeddedServiceDoc
 }

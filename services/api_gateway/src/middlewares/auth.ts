@@ -16,38 +16,36 @@ type InstanceWithEmbeddedService = PopulateEmbeddedDoc<IInstance, 'service', ISe
  * 
  * @returns 
  */
-const basicAuth = function () {
-    return async (
-        req: Request & { instance?: InstanceWithEmbeddedService },
-        res: Response, next: NextFunction) => {
+const basicAuth = async (
+    req: Request & { instance?: InstanceWithEmbeddedService },
+    res: Response, next: NextFunction) => {
 
-        // Get authorization header
-        const auth_header = req.headers.authorization;
+    // Get authorization header
+    const auth_header = req.headers.authorization;
 
-        // Check if authorization header is present
-        if (!auth_header?.startsWith('Bearer'))
-            return next(new UnauthenticatedError('Invalid authorization header'));
+    // Check if authorization header is present
+    if (!auth_header?.startsWith('Bearer'))
+        return next(new UnauthenticatedError('Invalid authorization header'));
 
-        const jwt_token = auth_header.split(' ')[1];
-        const payload = jwt.verify(jwt_token, config.JWT_ACCESS_SECRET)
-        req.instance = payload as InstanceWithEmbeddedService
+    const jwt_token = auth_header.split(' ')[1];
+    const payload = jwt.verify(jwt_token, config.JWT_ACCESS_SECRET)
+    req.instance = payload as InstanceWithEmbeddedService
 
-        console.log(req.instance)
-        // if (req.user) {
-        //     const saved_token = await getAuthFromCacheMemory({
-        //         email: req.user.email,
-        //         type: token_type ?? 'access',
-        //         auth_class: 'token'
-        //     })
+    console.log(req.instance)
+    // if (req.user) {
+    //     const saved_token = await getAuthFromCacheMemory({
+    //         email: req.user.email,
+    //         type: token_type ?? 'access',
+    //         auth_class: 'token'
+    //     })
 
-        //     if (!saved_token || saved_token !== jwt_token) {
-        //         return next(new UnauthenticatedError('Invalid authentication'))
-        //     }
-        // }
+    //     if (!saved_token || saved_token !== jwt_token) {
+    //         return next(new UnauthenticatedError('Invalid authentication'))
+    //     }
+    // }
 
-        next()
-    };
-}
+    next()
+};
 
 function withAuthentication(handler: AuthenticatedAsyncController) {
     return async (req: Request, res: Response, next: NextFunction) => {

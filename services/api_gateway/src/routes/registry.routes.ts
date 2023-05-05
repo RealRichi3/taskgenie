@@ -2,14 +2,19 @@ import { Router } from "express";
 import {
     registerService,
     unregisterService,
+    unregisterInstance,
+    getService
 } from "../controllers/registry.contoller";
 import schema from './schema'
 import routerValidator from '../middlewares/router_schema_validator'
 import { basicAuth, withAuthentication } from "../middlewares/auth";
+
 const router = Router()
 
 router
-    .post('/register', routerValidator(schema.register_service), registerService)
-    .post('/unregister', basicAuth(),  withAuthentication(unregisterService))
+    .post('/service/register', routerValidator(schema.register_service), registerService)
+    .post('/service/unregister', basicAuth,  withAuthentication(unregisterService))
+    .post('/instance/unregister', basicAuth,  withAuthentication(unregisterInstance))
+    .get('/data', basicAuth, withAuthentication(getService))
 
 export default router

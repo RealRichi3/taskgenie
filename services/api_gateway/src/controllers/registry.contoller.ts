@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import Registry, { addServiceToRegistry } from '../utils/registry'
+import Registry, { addServiceToRegistry, deleteInstance } from '../utils/registry'
 import { encodeData } from '../utils/jwt';
 import { AuthenticatedRequest } from '../types';
-import { BadRequestError, InternalServerError } from '../utils/errors';
+import { BadRequestError, InternalServerError, NotFoundError } from '../utils/errors';
 import { Instance, Service } from '../models';
 
 const registerService = async (req: Request, res: Response, next: NextFunction) => {
@@ -24,7 +24,8 @@ const registerService = async (req: Request, res: Response, next: NextFunction) 
 
     // TODO: Save API key for this service
 
-    res.status(200).json({
+    res.status(200).send({
+        success: true,
         message: "Service registered successfully",
         data: {
             service,
@@ -47,7 +48,8 @@ const unregisterService = async (req: AuthenticatedRequest, res: Response, next:
 
     // TODO: Delete the API key for this service
 
-    res.status(200).json({
+    res.status(200).send({
+        success: true,
         message: "Service unregistered successfully",
         data: null
     })
@@ -56,10 +58,35 @@ const unregisterService = async (req: AuthenticatedRequest, res: Response, next:
 const getServices = async (req: Request, res: Response, next: NextFunction) => {
 }
 
-const getService = async (req: Request, res: Response, next: NextFunction) => {
+const getService = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const instance = await Instance.findById(req.instance._id).populate('service')
+
+    if (!instance) {
+        return next(new NotFoundError('Service not found'))
+    }
+
+    res.status(200).send({
+        success: true,
+        message: "Instance data queried successfully",
+        data: {
+            instance: instance,
+            service: instance.service
+        }
+    })
 }
 
-const checkService = async (req: Request, res: Response, next: NextFunction) => {
+const unregisterInstance = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const instance_data = req.instance
+
+    const result = await deleteInstance(instance_data)
+
+    if (result instanceof Error) throw result;
+
+    res.status(200).send({
+        success: true,
+        message: 'Instance unregistered successfully',
+        data: null
+    })
 }
 
 export {
@@ -67,7 +94,7 @@ export {
     unregisterService,
     getServices,
     getService,
-    checkService
+    unregisterInstance
 }
 
 export default {
@@ -75,5 +102,5 @@ export default {
     unregisterService,
     getServices,
     getService,
-    checkService
+    unregisterInstance
 }
