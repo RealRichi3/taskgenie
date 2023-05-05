@@ -16,7 +16,7 @@ git clone https://github.com/RealRichi3/taskgenie
 
 cd taskgenie
 
-cd services/auth_service
+cd services/auth_service/v1
 
 npm install
 ```

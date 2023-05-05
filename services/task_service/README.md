@@ -1,153 +1,51 @@
+# Tasks Service
 
-# taskgenie
+The Tasks Service is an API that allows clients to create and publish tasks that need to be completed by workers. Workers can browse available tasks and accept the ones they're interested in completing. Clients can monitor the status of their tasks and provide feedback to workers once they're completed.
 
-Task genie allows clients to create and publish tasks that need to be completed by workers. Workers can browse available tasks and accept the ones they're interested in completing. Clients can monitor the status of their tasks and provide feedback to workers once they're completed.
+## Technologies Used
 
-  
+The Tasks Service is built with the following technologies:
 
-```diff
-backend/
+-   Django: A high-level Python web framework
+-   Django REST Framework: A powerful and flexible toolkit for building APIs
+-   PostgreSQL: A powerful, open-source object-relational database system
+-   Docker: A tool for creating and managing containers
 
---- services/
+## Getting Started
 
------- task_service/
+To get started with the Tasks Service, you'll need to have the following tools installed:
 
---------- api/
+-   Docker
+-   Docker Compose
 
------------- v1/
+Once you have these tools installed, you can run the following commands to start the Tasks Service:
 
---------------- views.py
+1.  Clone the repository:
+	```bash
+	git clone https://github.com/your-username/tasks-service.git
+	```
+2.  Change into the project directory:
+	```bash
+	cd tasks-service
+	```
+3.  Start the Docker containers:
+	```bash
+	docker-compose up -d --build
+	```
+4.  Create the database tables:
+	```bash
+	docker-compose exec web python manage.py migrate
+	```
+5.  Create a superuser:
+	```bash
+	docker-compose exec web python manage.py createsuperuser
+	```
+You should now be able to access the Tasks Service API at [http://localhost:8000/](http://localhost:8000/).
 
---------------- serializers.py
+## API Documentation
 
---------- tasks/
+The Tasks Service API documentation can be found at [http://localhost:8000/swagger/](http://localhost:8000/swagger/) or [http://localhost:8000/redoc/](http://localhost:8000/redoc/).
 
------------- tasks.py
+## License
 
---------- models.py
-
---------- urls.py
-
---------- tests/
-
------------- test_views.py
-
------------- test_serializers.py
-
------- payment_service/
-
---------- api/
-
------------- v1/
-
---------------- views.py
-
---------------- serializers.py
-
---------- payments/
-
------------- payments.py
-
---------- models.py
-
---------- urls.py
-
---------- tests/
-
------------- test_views.py
-
------------- test_serializers.py
-
---- config/
-
------- settings.py
-
------- urls.py
-
---- requirements.txt
-
---- manage.py
-
-  
-
-frontend/
-
---- src/
-
------- components/
-
---------- App.js
-
---------- TaskList.js
-
---------- TaskDetails.js
-
---------- PaymentHistory.js
-
---------- PaymentDetails.js
-
------- services/
-
---------- taskService.js
-
---------- paymentService.js
-
------- utils/
-
---------- api.js
-
------- App.css
-
------- App.test.js
-
------- index.js
-
---- package.json
-
---- README.md
-
---- yarn.lock
-
-  
-
-node_service/
-
---- api/
-
------- v1/
-
---------- routes/
-
------------- tasks.js
-
------------- payments.js
-
---------- controllers/
-
------------- taskController.js
-
------------- paymentController.js
-
---------- models/
-
------------- taskModel.js
-
------------- paymentModel.js
-
---------- tests/
-
------------- taskController.test.js
-
------------- paymentController.test.js
-
---- app.js
-
---- package.json
-
---- README.md
-
-  
-
-docker-compose.yml
-
-```
+The Tasks Service is released under the [MIT License](https://opensource.org/licenses/MIT).
