@@ -32,6 +32,13 @@ service_schema.pre('validate', function (next) {
     next()
 })
 
+service_schema.virtual('instances', {
+    ref: 'Instance',
+    localField: "_id",
+    foreignField: "service",
+    justOne: false
+})
+
 const Service: Model<IServiceDoc> = model<IServiceDoc>('Service', service_schema)
 const Instance: Model<IInstanceDoc> = model<IInstanceDoc>('Instance', instance_schema)
 

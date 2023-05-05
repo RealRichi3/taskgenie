@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import Registry, { addServiceToRegistry, deleteInstance } from '../utils/registry'
+import { addServiceToRegistry, deleteInstance } from '../utils/registry'
 import { encodeData } from '../utils/jwt';
-import { AuthenticatedRequest } from '../types';
+import { AuthenticatedRequest, IInstanceDoc, IServiceDoc, PopulateVirtualDoc } from '../types';
 import { BadRequestError, InternalServerError, NotFoundError } from '../utils/errors';
 import { Instance, Service } from '../models';
 
@@ -10,17 +10,17 @@ const registerService = async (req: Request, res: Response, next: NextFunction) 
         protocol, host, port, name, version
     } = req.body
 
-    const service =
+    const doc =
         await addServiceToRegistry(
             { protocol, host, port, name, version },
             req
         )
 
-    if (!service) {
+    if (!doc) {
         return next(new InternalServerError('Service could not be registered'))
     }
 
-    const api_key = await encodeData(service.toObject())
+    const api_key = await encodeData(doc.toObject())
 
     // TODO: Save API key for this service
 
@@ -28,7 +28,8 @@ const registerService = async (req: Request, res: Response, next: NextFunction) 
         success: true,
         message: "Service registered successfully",
         data: {
-            service,
+            service: doc.service,
+            instance: doc,
             api_key
         }
     })
@@ -56,6 +57,16 @@ const unregisterService = async (req: AuthenticatedRequest, res: Response, next:
 }
 
 const getServices = async (req: Request, res: Response, next: NextFunction) => {
+    type ServiceWithInstances = PopulateVirtualDoc<IServiceDoc, 'instances', IInstanceDoc[]>
+    const services = await Service.find().populate<ServiceWithInstances>('instances')
+
+    res.status(200).send({
+        success: true,
+        message: "Services queried successfully",
+        data: {
+            services: services.filter(service => service.toObject())
+        }
+    })
 }
 
 const getService = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
