@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import 'express-async-errors';
+import axios from 'axios'
 import express, { Application, NextFunction, Request, Response } from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
-import { NODE_ENV, PORT } from './config';
+import { NODE_ENV, PORT, REGISTRY_SERVICE } from './config';
 import errorHandler from './middlewares/error_handler';
 import routeHandler from './routes';
 import cookieParser from 'cookie-parser';
+import { Server } from 'http';
 
 /**
  * Init Middlewares
@@ -46,16 +48,16 @@ function initExpressRouteHandler(app: Application): void {
      * based on the route prefix:
      * */
     routeHandler(app);
-    
+
     app.use(errorHandler);
-    
+
     app.all('*', (req: Request, res: Response, _next: NextFunction) => {
         res.status(404).send({
             status: 'error',
             message: 'Route not found',
         });
     });
-    
+
     return
 }
 
@@ -67,12 +69,49 @@ export const app: Application = express();
  * @description Initializes middlewares, and route handlers then starts server
  *
  */
-export function startExpressServer(): void {
-    initMiddlewares(app);
+export async function startExpressServer({ register_service = false }) {
+    try {
+        initMiddlewares(app);
 
-    initExpressRouteHandler(app);
+        initExpressRouteHandler(app);
 
-    app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}...`);
-    });
+        const server = app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}...`);
+        });
+
+        const response =
+            register_service
+                ? await registerService(server)
+                : null
+
+        if (response instanceof Error) throw response;
+
+    } catch (error) {
+        console.log(error)
+        console.log('Shutting down server')
+
+        process.exit(0)
+    }
+}
+
+async function registerService(server: Server) {
+    try {
+        const service_data = {
+            protocol: server.address(),
+            port: PORT,
+            name: 'auth',
+            version: '1'
+        }
+
+        const registry_res =
+            await axios
+                .post(REGISTRY_SERVICE + '/host/registry/service/register', service_data)
+                .then(res => res)
+                .catch(err => err)
+
+        console.log(registry_res.data)
+    } catch (error) {
+        console.log(error)
+        return error
+    }
 }

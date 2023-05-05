@@ -2,15 +2,11 @@ import { Entity, Schema } from 'redis-om';
 import redis_client from '../database/redis'
 
 class AuthCode extends Entity {
-    constructor () {
-        super()
-                
-        user!: string;
-        verification_code?: number;
-        password_reset_code?: number;
-        activation_code?: number;
-        deactivation_code?: number;
-    }
+    user!: string;
+    verification_code?: number;
+    password_reset_code?: number;
+    activation_code?: number;
+    deactivation_code?: number;
 }
 
 class AuthToken extends Entity { }

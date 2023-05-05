@@ -47,3 +47,5 @@ export const NODE_ENV: NodeENV = process.env.NODE_ENV as NodeENV;
 export const CLOUDINARY_CLOUD_NAME: string = process.env.CLOUDINARY_CLOUD_NAME as string,
     CLOUDINARY_API_KEY: string = process.env.CLOUDINARY_API_KEY as string,
     CLOUDINARY_API_SECRET: string = process.env.CLOUDINARY_API_SECRET as string;
+
+export const REGISTRY_SERVICE: string = process.env.REGISTRY_SERVICE as string;

@@ -287,7 +287,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
     // Get access token
     const { access_token, refresh_token } = await getAuthTokens(user.toObject(), 'access');
-    
+
     const token_bind = randomUUID()
     await saveTokenToCacheMemory({
         type: 'cookie_bind',

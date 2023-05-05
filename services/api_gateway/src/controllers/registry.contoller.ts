@@ -7,14 +7,19 @@ import { Instance, Service } from '../models';
 
 const registerService = async (req: Request, res: Response, next: NextFunction) => {
     const {
-        protocol, host, port, name, version
+        port, name, version
     } = req.body
 
+    const service_data = {
+        port, name, version,
+        protocol: req.protocol,
+        host: req.hostname,
+    }
+
+    console.log(service_data)
+
     const doc =
-        await addServiceToRegistry(
-            { protocol, host, port, name, version },
-            req
-        )
+        await addServiceToRegistry(service_data, req)
 
     if (!doc) {
         return next(new InternalServerError('Service could not be registered'))

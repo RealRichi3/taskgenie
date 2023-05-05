@@ -20,7 +20,7 @@ async function startServer() {
     try {
         await connectToDatabase();
 
-        startExpressServer();
+        startExpressServer({ register_service: true });
     } catch (error) {
         console.log(error);
     }
