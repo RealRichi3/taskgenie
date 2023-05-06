@@ -1,0 +1,10 @@
+_format_version: "2.1"
+_transform: true
+
+services:
+  - name: taskgenie
+    url: http://taskgenie_auth_service:5555/
+    routes:
+      - name: taskgenie-auth
+        paths:
+          - /taskgenie

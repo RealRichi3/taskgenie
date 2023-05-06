@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import 'express-async-errors';
-import axios from 'axios'
+import axios, { Axios, AxiosResponse } from 'axios'
 import express, { Application, NextFunction, Request, Response } from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
@@ -39,7 +39,6 @@ function initExpressRouteHandler(app: Application): void {
     //         message: 'Welcome to Ride APP API built by molunorichie@gmail.com',
     //     });
     // });
-
     app.use(cookieParser())
 
     /** Initialize Route Handler
@@ -97,19 +96,27 @@ export async function startExpressServer({ register_service = false }) {
 async function registerService(server: Server) {
     try {
         const service_data = {
-            protocol: server.address(),
             port: PORT,
             name: 'auth',
             version: '1'
         }
 
-        const registry_res =
+        const registry_res: AxiosResponse =
             await axios
-                .post(REGISTRY_SERVICE + '/host/registry/service/register', service_data)
+                .post(REGISTRY_SERVICE + '/registry/service/register', service_data)
                 .then(res => res)
                 .catch(err => err)
 
-        console.log(registry_res.data)
+        if (registry_res.status !== 200) {
+            if (registry_res instanceof Error) throw registry_res;
+
+            throw new Error('Service registration failed')
+        }
+
+        console.log('registered service successfully')
+        // Save API key for service
+        app.set('api_key', registry_res.data.data.api_key)
+        app.set('api_instance', registry_res.data.data.instance)
     } catch (error) {
         console.log(error)
         return error

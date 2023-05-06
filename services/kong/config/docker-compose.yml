@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  kong_database:
+    image: postgres:12.0-alpine
+    networks:
+      - kong_network
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=kong
+      - POSTGRES_DB=kong
+      - POSTGRES_PASSWORD=kongpassword
+
+  kong:
+    image: kong
+    networks:
+      - kong_network
+    ports:
+      - "8800:8800"
+      - "8443:8443"
+      - "8001:8001"
+      - "8444:8444"
+    environment:
+      - KONG_PG_HOST=kong_database
+      - KONG_PG_PASSWORD=kongpassword
+      - KONG_PG_DATABASE=kong
+      - KONG_PG_USER=kong
+    command: sh -c "kong migrations bootstrap && kong start"
+    volumes:
+      - ./kong.yml:/etc/kong/kong.yml 
+
+  taskgenie_auth_service:
+    build: ./auth_service
+    networks:
+      - kong_network
+    ports:
+      - "5500:5500"
+
+networks:
+  kong_network:
+    driver: bridge

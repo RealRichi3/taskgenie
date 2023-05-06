@@ -10,12 +10,13 @@ import { Email, WithPopulated, UserWithStatus } from '../types';
 import { AuthenticatedRequest } from '../types/global';
 import { Status, IStatusDoc } from '../models/status.model';
 import { User, IUserDoc } from '../models/user.model';
-import { BlacklistedToken } from '../models/auth.model';
 import { IPasswordDoc, Password } from '../models/password.model';
 import { BadRequestError, ForbiddenError, InternalServerError } from '../utils/errors';
 import { IUser } from '../models/types/user.types';
 import { randomUUID } from 'crypto';
-import { JWT_REFRESH_EXP } from '../config';
+import { JWT_REFRESH_EXP, REGISTRY_SERVICE } from '../config';
+import axios from 'axios';
+const HOST_URL = REGISTRY_SERVICE
 
 /**
  * User signup
@@ -35,50 +36,63 @@ import { JWT_REFRESH_EXP } from '../config';
  * //TODO: Test admin and super admin signup
  * */
 const userSignup = async (req: Request, res: Response, next: NextFunction) => {
+    console.log(HOST_URL)
+    const resp = await
+        axios.post(`${HOST_URL}/moocs/api/v1/auth/login`, {
+            email: "taskgeniesuperadmin2@gmail.com",
+            password: "Testpassword1"
+        })
+            .then((resp) => resp)
+            .catch((err) => err)
+    // console.log(resp.data.data)
 
-    const {
-        email, firstname, lastname,
-        password, role } = req.body;
-    const user_info = {
-        email: email as Email,
-        firstname: firstname as string,
-        lastname: lastname as string,
-        password: password as string,
-        role: role as IUser['role'],
-    };
+    console.log(resp)
+    res.status(resp.response.status).send(resp.response.data)
 
-    // Check if user already exists
-    type UserWithStatus = WithPopulated<IUserDoc, 'status', IStatusDoc>;
-    const existing_user_d = await User.findOne({ email }).populate<UserWithStatus>('status');
-    const existing_user: UserWithStatus | undefined = existing_user_d?.toObject();
+    // // return
+    // const {
+    //     email, firstname, lastname,
+    //     password, role } = req.body;
+    // const user_info = {
+    //     email: email as Email,
+    //     firstname: firstname as string,
+    //     lastname: lastname as string,
+    //     password: password as string,
+    //     role: role as IUser['role'],
+    // };
 
-    if (existing_user) return await handleExistingUser(existing_user, res, next);
+    // // Check if user already exists
+    // type UserWithStatus = WithPopulated<IUserDoc, 'status', IStatusDoc>;
+    // const existing_user_d = await User.findOne({ email }).populate<UserWithStatus>('status');
+    // const existing_user: UserWithStatus | undefined = existing_user_d?.toObject();
 
-    // Create new user in session
-    let user: IUserDoc | undefined;
-    const session = await mongoose.startSession()
-    await session.withTransaction(async () => {
-        // Create user
-        user = (await User.create([user_info], { session }))[0]
+    // if (existing_user) return await handleExistingUser(existing_user, res, next);
 
-        if (user) {
-            // Create users profile
-            const profile = await user.createProfile<typeof user.role>(session);
+    // // Create new user in session
+    // let user: IUserDoc | undefined;
+    // const session = await mongoose.startSession()
+    // await session.withTransaction(async () => {
+    //     // Create user
+    //     user = (await User.create([user_info], { session }))[0]
 
-            // Create password
-            await Password.create([{ user: user._id, password }], { session });
-        }
+    //     if (user) {
+    //         // Create users profile
+    //         const profile = await user.createProfile<typeof user.role>(session);
 
-        await session.commitTransaction();
-        session.endSession();
-    });
+    //         // Create password
+    //         await Password.create([{ user: user._id, password }], { session });
+    //     }
 
-    // If user is not created throw error
-    if (!user) throw new BadRequestError('An error occurred');
+    //     await session.commitTransaction();
+    //     session.endSession();
+    // });
 
-    // Get access token
-    const populated_user: UserWithStatus = await user.populate<UserWithStatus>('status')
-    return await handleUnverifiedUser(populated_user.toObject(), res);
+    // // If user is not created throw error
+    // if (!user) throw new BadRequestError('An error occurred');
+
+    // // Get access token
+    // const populated_user: UserWithStatus = await user.populate<UserWithStatus>('status')
+    // return await handleUnverifiedUser(populated_user.toObject(), res);
 };
 
 /**
@@ -267,6 +281,14 @@ const resetPassword = async (req: AuthenticatedRequest, res: Response, next: Nex
  * @returns { user: IUserDoc, access_token: string, refresh_token: string }
  */
 const login = async (req: Request, res: Response, next: NextFunction) => {
+    console.log('login')
+    console.log('login')
+    console.log('login')
+    console.log('login')
+    console.log('login')
+    console.log('login')
+    console.log('login')
+    console.log('login')
     const { email, password } = req.body;
 
     // Get user
